@@ -2,9 +2,9 @@
 // Accepts either raw text or base64-encoded file (PDF/DOCX/TXT)
 // Parses files server-side, then calls NVIDIA AI for analysis
 
+import { extractText, getDocumentProxy } from "unpdf";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-const pdfParse = require("pdf-parse");
 const mammoth = require("mammoth");
 
 /* ── Curated course database with REAL working URLs ── */
@@ -365,8 +365,11 @@ async function extractTextFromBase64(base64Data, fileType) {
   const buffer = Buffer.from(base64Data, "base64");
 
   if (fileType === "pdf") {
-    const data = await pdfParse(buffer);
-    return data.text;
+    // Use unpdf — a pure-JS PDF parser optimized for serverless runtimes
+    // No native canvas dependencies required
+    const pdf = await getDocumentProxy(new Uint8Array(buffer));
+    const { text } = await extractText(pdf, { mergePages: true });
+    return text;
   }
 
   if (fileType === "docx") {
