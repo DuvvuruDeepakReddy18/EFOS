@@ -253,6 +253,14 @@ const COURSE_DB = {
     { title: "RTOS Fundamentals", provider: "YouTube", url: "https://www.youtube.com/watch?v=F321087yYy4", duration_hours: 4 },
     { title: "Real-Time Operating Systems", provider: "Coursera", url: "https://www.coursera.org/learn/real-time-operating-systems", duration_hours: 15 },
   ],
+  "git": [
+    { title: "Git and GitHub for Beginners", provider: "YouTube", url: "https://www.youtube.com/watch?v=RGOj5yH7evk", duration_hours: 2 },
+    { title: "Version Control with Git", provider: "Coursera", url: "https://www.coursera.org/learn/version-control-with-git", duration_hours: 15 },
+  ],
+  "aws": [
+    { title: "AWS Certified Cloud Practitioner", provider: "YouTube", url: "https://www.youtube.com/watch?v=SOTamWNgDKc", duration_hours: 14 },
+    { title: "AWS Fundamentals", provider: "Coursera", url: "https://www.coursera.org/specializations/aws-fundamentals", duration_hours: 30 },
+  ],
 };
 
 /**
