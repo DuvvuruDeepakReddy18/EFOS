@@ -17,7 +17,7 @@ export default function StudentDashboard() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h1 className="text-3xl font-extrabold text-white tracking-tight">Welcome to She Care AI, {firstName} 👋</h1>
+              <h1 className="text-3xl font-extrabold text-white tracking-tight">Welcome to InternMatch, {firstName} 👋</h1>
               <p className="text-sm text-gray-400 mt-1">Let's get your profile set up to find your perfect career path.</p>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20">
