@@ -2,10 +2,10 @@
 // Accepts either raw text or base64-encoded file (PDF/DOCX/TXT)
 // Parses files server-side, then calls NVIDIA AI for analysis
 
-import { extractText, getDocumentProxy } from "unpdf";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const mammoth = require("mammoth");
+const pdfParse = require("pdf-parse");
 
 /* ── Curated course database with REAL working URLs ── */
 const COURSE_DB = {
@@ -418,18 +418,18 @@ async function extractTextFromBase64(base64Data, fileType) {
   console.log(`[resume-api] Parsing ${fileType} file, buffer size: ${buffer.length} bytes`);
 
   if (fileType === "pdf") {
-    // Strategy 1: Try unpdf (pure-JS, serverless-optimized)
+    // Strategy 1: Try pdf-parse (reliable, works in Vercel Serverless)
     try {
-      const pdf = await getDocumentProxy(new Uint8Array(buffer));
-      const { text } = await extractText(pdf, { mergePages: true });
-      console.log(`[resume-api] unpdf extracted ${text.length} chars`);
+      const pdfData = await pdfParse(buffer);
+      const text = pdfData.text;
+      console.log(`[resume-api] pdf-parse extracted ${text?.length || 0} chars`);
       if (text && text.trim().length > 30) return text;
-      console.log("[resume-api] unpdf returned too little text, trying fallback...");
-    } catch (unpdfErr) {
-      console.error("[resume-api] unpdf failed:", unpdfErr.message);
+      console.log("[resume-api] pdf-parse returned too little text, trying fallback...");
+    } catch (pdfParseErr) {
+      console.error("[resume-api] pdf-parse failed:", pdfParseErr.message);
     }
 
-    // Strategy 2: Raw binary text extraction (works on most PDFs)
+    // Strategy 2: Raw binary text extraction (works on some PDFs)
     try {
       const rawText = extractTextFromPdfBuffer(buffer);
       console.log(`[resume-api] Raw PDF extraction got ${rawText.length} chars`);

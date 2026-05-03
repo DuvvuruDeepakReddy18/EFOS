@@ -10,6 +10,13 @@ import toast from 'react-hot-toast';
 // Base64 conversion uses FileReader to prevent browser freezing.
 
 
+import * as pdfjsLib from 'pdfjs-dist';
+import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.mjs?url';
+import * as mammoth from 'mammoth';
+
+// Configure pdfjs worker to use the local bundled version
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+
 export default function ResumeUpload() {
   const { isAnalyzed, result: storedResult } = useResumeStore();
   const [stage, setStage] = useState<'upload' | 'analyzing' | 'complete'>(isAnalyzed && storedResult ? 'complete' : 'upload');
@@ -83,17 +90,67 @@ export default function ResumeUpload() {
         const text = await file.text();
         toast.dismiss(loadingToast);
         callApi({ resumeText: text });
+      } else if (fileType === 'pdf') {
+        // Safe Client-side PDF Parsing using pdfjs-dist
+        try {
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument(new Uint8Array(arrayBuffer)).promise;
+          let text = '';
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            const strings = content.items.map((item: any) => item.str);
+            text += strings.join(' ') + '\n';
+          }
+          
+          if (text.trim().length > 50) {
+            toast.dismiss(loadingToast);
+            callApi({ resumeText: text });
+          } else {
+            throw new Error("Extracted text is too short. PDF may be image-based.");
+          }
+        } catch (pdfErr) {
+          console.error("Client-side PDF parsing failed, falling back to server:", pdfErr);
+          // Fallback to server-side if client fails
+          const reader = new FileReader();
+          reader.onload = () => {
+            toast.dismiss(loadingToast);
+            const base64Data = (reader.result as string).split(',')[1];
+            callApi({ fileData: base64Data, fileType });
+          };
+          reader.readAsDataURL(file);
+        }
+      } else if (fileType === 'docx') {
+        // Safe Client-side DOCX Parsing using mammoth
+        try {
+          const arrayBuffer = await file.arrayBuffer();
+          const result = await mammoth.extractRawText({ arrayBuffer });
+          const text = result.value;
+          
+          if (text.trim().length > 50) {
+            toast.dismiss(loadingToast);
+            callApi({ resumeText: text });
+          } else {
+            throw new Error("Extracted text is too short. DOCX may be image-based.");
+          }
+        } catch (docxErr) {
+          console.error("Client-side DOCX parsing failed, falling back to server:", docxErr);
+          // Fallback to server-side
+          const reader = new FileReader();
+          reader.onload = () => {
+            toast.dismiss(loadingToast);
+            const base64Data = (reader.result as string).split(',')[1];
+            callApi({ fileData: base64Data, fileType });
+          };
+          reader.readAsDataURL(file);
+        }
       } else {
-        // Safe, non-blocking base64 conversion using FileReader
+        // Fallback catch-all
         const reader = new FileReader();
         reader.onload = () => {
           toast.dismiss(loadingToast);
           const base64Data = (reader.result as string).split(',')[1];
           callApi({ fileData: base64Data, fileType });
-        };
-        reader.onerror = () => {
-          toast.dismiss(loadingToast);
-          toast.error('Error reading file. Please try pasting text instead.');
         };
         reader.readAsDataURL(file);
       }
