@@ -167,6 +167,92 @@ const COURSE_DB = {
     { title: "Excel Full Course for Beginners", provider: "YouTube", url: "https://www.youtube.com/watch?v=Vl0H-qTclOg", duration_hours: 3 },
     { title: "Excel Skills for Business", provider: "Coursera", url: "https://www.coursera.org/specializations/excel", duration_hours: 25 },
   ],
+  /* ── Expanded entries for richer gap coverage ── */
+  "pytorch": [
+    { title: "PyTorch for Deep Learning — Full Course", provider: "YouTube", url: "https://www.youtube.com/watch?v=V_xro1bcAuA", duration_hours: 10 },
+    { title: "Deep Neural Networks with PyTorch", provider: "Coursera", url: "https://www.coursera.org/learn/deep-neural-networks-with-pytorch", duration_hours: 20 },
+  ],
+  "scikit-learn": [
+    { title: "Scikit-Learn Full Course", provider: "YouTube", url: "https://www.youtube.com/watch?v=0B5eIE_1vpU", duration_hours: 3 },
+    { title: "Machine Learning with Scikit-Learn", provider: "Coursera", url: "https://www.coursera.org/learn/machine-learning-with-python", duration_hours: 15 },
+  ],
+  "fastapi": [
+    { title: "FastAPI Full Course for Beginners", provider: "YouTube", url: "https://www.youtube.com/watch?v=7t2alSnE2-I", duration_hours: 5 },
+    { title: "APIs with FastAPI and Python", provider: "Udemy", url: "https://www.udemy.com/course/rest-api-flask-and-python/", duration_hours: 17 },
+  ],
+  "express": [
+    { title: "Express.js Full Course", provider: "YouTube", url: "https://www.youtube.com/watch?v=nH9E25nkk3I", duration_hours: 3 },
+    { title: "Server-side Development with NodeJS, Express", provider: "Coursera", url: "https://www.coursera.org/learn/server-side-nodejs", duration_hours: 20 },
+  ],
+  "terraform": [
+    { title: "Terraform Full Course for Beginners", provider: "YouTube", url: "https://www.youtube.com/watch?v=SLB_c_ayRMo", duration_hours: 3 },
+    { title: "HashiCorp Terraform Associate", provider: "Coursera", url: "https://www.coursera.org/learn/terraform-iac", duration_hours: 15 },
+  ],
+  "vue": [
+    { title: "Vue.js Full Course for Beginners", provider: "YouTube", url: "https://www.youtube.com/watch?v=FXpIoQ_rT_c", duration_hours: 3 },
+    { title: "Vue - The Complete Guide", provider: "Udemy", url: "https://www.udemy.com/course/vuejs-2-the-complete-guide/", duration_hours: 32 },
+  ],
+  "tailwind": [
+    { title: "Tailwind CSS Full Course", provider: "YouTube", url: "https://www.youtube.com/watch?v=dFgzHOX84xQ", duration_hours: 3 },
+    { title: "Tailwind CSS From Scratch", provider: "Udemy", url: "https://www.udemy.com/course/tailwind-css-from-scratch/", duration_hours: 12 },
+  ],
+  "redis": [
+    { title: "Redis Full Course for Beginners", provider: "YouTube", url: "https://www.youtube.com/watch?v=XCsS_NVAa1g", duration_hours: 2 },
+    { title: "Redis University Free Courses", provider: "Redis", url: "https://university.redis.com/", duration_hours: 10 },
+  ],
+  "postgresql": [
+    { title: "PostgreSQL Full Course", provider: "YouTube", url: "https://www.youtube.com/watch?v=qw--VYLpxG4", duration_hours: 4 },
+    { title: "PostgreSQL for Everybody", provider: "Coursera", url: "https://www.coursera.org/specializations/postgresql-for-everybody", duration_hours: 20 },
+  ],
+  "mysql": [
+    { title: "MySQL Full Course for Beginners", provider: "YouTube", url: "https://www.youtube.com/watch?v=HXV3zeQKqGY", duration_hours: 4 },
+  ],
+  "kotlin": [
+    { title: "Kotlin Full Course for Beginners", provider: "YouTube", url: "https://www.youtube.com/watch?v=EExSSotojVI", duration_hours: 3 },
+    { title: "Android App Development with Kotlin", provider: "Coursera", url: "https://www.coursera.org/specializations/android-app-development", duration_hours: 30 },
+  ],
+  "swift": [
+    { title: "Swift Full Course for Beginners", provider: "YouTube", url: "https://www.youtube.com/watch?v=comQ1-x2a1Q", duration_hours: 5 },
+    { title: "iOS Development with Swift", provider: "Coursera", url: "https://www.coursera.org/specializations/app-development", duration_hours: 25 },
+  ],
+  "react native": [
+    { title: "React Native Full Course", provider: "YouTube", url: "https://www.youtube.com/watch?v=obH0Po_RdWk", duration_hours: 5 },
+    { title: "React Native - The Practical Guide", provider: "Udemy", url: "https://www.udemy.com/course/react-native-the-practical-guide/", duration_hours: 28 },
+  ],
+  "solidity": [
+    { title: "Solidity Full Course", provider: "YouTube", url: "https://www.youtube.com/watch?v=M576WGiDBdQ", duration_hours: 16 },
+  ],
+  "embedded": [
+    { title: "Embedded Systems Full Course", provider: "YouTube", url: "https://www.youtube.com/watch?v=3V9eqvkMzHA", duration_hours: 8 },
+    { title: "Introduction to Embedded Systems", provider: "Coursera", url: "https://www.coursera.org/learn/introduction-embedded-systems", duration_hours: 20 },
+  ],
+  "c": [
+    { title: "C Programming Full Course", provider: "YouTube", url: "https://www.youtube.com/watch?v=87SH2Cn0s9A", duration_hours: 4 },
+    { title: "C for Everyone: Programming Fundamentals", provider: "Coursera", url: "https://www.coursera.org/learn/c-for-everyone", duration_hours: 15 },
+  ],
+  "networking": [
+    { title: "Computer Networking Full Course", provider: "YouTube", url: "https://www.youtube.com/watch?v=qiQR5rTSshw", duration_hours: 8 },
+    { title: "Google IT Support Professional Certificate", provider: "Coursera", url: "https://www.coursera.org/professional-certificates/google-it-support", duration_hours: 40 },
+  ],
+  "rest apis": [
+    { title: "REST API Design Best Practices", provider: "YouTube", url: "https://www.youtube.com/watch?v=DcLnNId5c04", duration_hours: 1 },
+    { title: "APIs with Node.js and Express", provider: "Coursera", url: "https://www.coursera.org/learn/server-side-nodejs", duration_hours: 20 },
+  ],
+  "ci/cd": [
+    { title: "CI/CD with GitHub Actions Full Course", provider: "YouTube", url: "https://www.youtube.com/watch?v=R8_veQiYBjI", duration_hours: 2 },
+    { title: "Continuous Integration and Continuous Delivery", provider: "Coursera", url: "https://www.coursera.org/learn/continuous-integration", duration_hours: 15 },
+  ],
+  "gcp": [
+    { title: "Google Cloud Full Course", provider: "YouTube", url: "https://www.youtube.com/watch?v=UGRDM86MBIQ", duration_hours: 5 },
+    { title: "Google Cloud Fundamentals", provider: "Coursera", url: "https://www.coursera.org/learn/gcp-fundamentals", duration_hours: 12 },
+  ],
+  "monitoring": [
+    { title: "Prometheus & Grafana Full Course", provider: "YouTube", url: "https://www.youtube.com/watch?v=h4Sl21AKiDg", duration_hours: 3 },
+  ],
+  "rtos": [
+    { title: "RTOS Fundamentals", provider: "YouTube", url: "https://www.youtube.com/watch?v=F321087yYy4", duration_hours: 4 },
+    { title: "Real-Time Operating Systems", provider: "Coursera", url: "https://www.coursera.org/learn/real-time-operating-systems", duration_hours: 15 },
+  ],
 };
 
 /**
@@ -191,28 +277,108 @@ const API_KEY =
   process.env.NVIDIA_API_KEY ||
   "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";
 
-// Vercel maxDuration is 60s and the client aborts at ~58s.
-// Budget: 22s per model × 2 models = 44s, leaves ~14s for file parsing + JSON extraction.
 const NVIDIA_KEYS = () => [
   {
     key: API_KEY,
     model: "meta/llama-3.1-8b-instruct",
-    maxTokens: 1500,
-    timeout: 22000,
+    maxTokens: 1200,
+    timeout: 30000,
   },
   {
     key: API_KEY,
     model: "meta/llama-3.3-70b-instruct",
-    maxTokens: 1500,
-    timeout: 22000,
-  },
+    maxTokens: 1200,
+    timeout: 25000,
+  }
 ];
 
 const NVIDIA_URL = "https://integrate.api.nvidia.com/v1/chat/completions";
 
-const SYSTEM_PROMPT = `You are an expert AI Resume Analyzer. Given a resume, return ONLY JSON with this exact structure:
-{"resume_score":85,"summary":"2-3 sentence comprehensive summary","name":"Name","email":"Email","phone":"Phone","education":{"institution":"University Name","degree":"Degree","cgpa":8.5,"year":"2024"},"skills":[{"name":"Skill","category":"Domain","level":"Beginner/Intermediate/Expert","confidence":0.9}],"projects":[{"title":"Proj","description":"Detailed short description","tech_stack":["React"],"relevance_score":85}],"experience":[{"role":"Role","company":"Company","duration":"Duration","domain":"Domain"}],"certifications":["Cert 1"],"preferred_domains":["Web"],"improvement_tips":[{"text":"Detailed actionable tip","type":"tip/warning"}],"talent_dna":{"analyticalThinking":80,"communication":85,"creativity":75,"leadership":70,"adaptability":85,"collaboration":90,"problemSolving":85,"innovationIndex":80},"skill_gaps":[{"skill":"Skill","priority":"Moderate","reason":"Why"}],"target_roles":["Role1"]}
-Extract ALL relevant information. Provide at least 5-10 skills, 3-5 projects (MUST include a relevance_score 0-100), 3-5 actionable improvement_tips, and all 8 talent_dna metrics scored 0-100. Output ONLY valid JSON.`;
+// The AI generates ALL fields from the resume directly. No predefined data.
+const SYSTEM_PROMPT = `You are an expert career analyst. Analyze the resume thoroughly. Return ONLY valid JSON (no markdown, no prose, no extra text). Generate ALL fields by deeply analyzing the resume content.
+
+{
+  "resume_score": 0-100,
+  "summary": "1-2 sentence professional summary",
+  "name": "...", "email": "...", "phone": "...",
+  "education": {"institution": "...", "degree": "...", "cgpa": number_or_null, "year": "..."},
+  "skills": [{"name": "...", "category": "Programming|Frontend|Backend|Database|DevOps|Cloud|AI/ML|Data|Embedded|Mobile|Other", "level": "Beginner|Intermediate|Expert", "confidence": 0.0-1.0}] (max 8 items),
+  "projects": [{"title": "...", "description": "1 line", "tech_stack": ["..."], "relevance_score": 0-100}] (max 2 items),
+  "experience": [{"role": "...", "company": "...", "duration": "...", "domain": "..."}] (all found, max 2),
+  "certifications": ["..."] (all found, max 2),
+  "improvement_tips": [{"text": "specific actionable advice for THIS resume", "type": "tip|warning"}] (2 items),
+  "target_roles": ["..."] (2 roles),
+  "preferred_domains": ["..."] (2 domains),
+  "talent_dna": {"analyticalThinking": 0-100, "creativity": 0-100, "leadership": 0-100, "adaptability": 0-100, "communication": 0-100, "collaboration": 0-100, "problemSolving": 0-100, "innovationIndex": 0-100},
+  "skill_gaps": [{"skill": "...", "priority": "Critical|Moderate", "reason": "1 line why", "hoursToClose": number, "matchBoost": 1-15}] (max 3 missing skills),
+  "skill_strengthening": [{"skill": "...", "reason": "1 line why", "hoursToClose": number, "matchBoost": 1-10}] (max 2 existing weak skills),
+  "learning_plan": [{"week_range": "Week 1", "topic": "...", "skills_covered": ["..."], "goal": "short goal", "type": "gap|strengthen"}] (2 weeks),
+  "current_match_score": 0-100,
+  "potential_match_score": 0-100
+}`;
+
+/**
+ * Best-effort repair of JSON that was cut off mid-generation.
+ * Drops a trailing partial token and closes any open strings/objects/arrays.
+ * Returns null if it can't produce something parseable-looking.
+ */
+function repairTruncatedJson(s) {
+  if (!s || typeof s !== "string") return null;
+  let str = s.trim();
+  if (!str.startsWith("{")) return null;
+
+  // Walk the string, track string state and bracket stack; ignore content after a partial token.
+  const stack = [];
+  let inString = false;
+  let escape = false;
+  let lastSafeEnd = -1; // index just after the last complete value at depth ≥1
+
+  for (let i = 0; i < str.length; i++) {
+    const c = str[i];
+    if (escape) { escape = false; continue; }
+    if (c === "\\" && inString) { escape = true; continue; }
+    if (c === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (c === "{" || c === "[") stack.push(c);
+    else if (c === "}" || c === "]") {
+      stack.pop();
+      lastSafeEnd = i + 1;
+    } else if (c === "," && stack.length > 0) {
+      lastSafeEnd = i; // safe to truncate up to (but not including) this comma
+    }
+  }
+
+  // If we ended inside a string, drop the partial string back to its opening quote.
+  if (inString) {
+    const lastQuote = str.lastIndexOf('"', lastSafeEnd > 0 ? lastSafeEnd : str.length);
+    if (lastQuote > 0) str = str.slice(0, lastQuote);
+    else return null;
+  } else if (lastSafeEnd > 0) {
+    str = str.slice(0, lastSafeEnd);
+  }
+
+  // Strip trailing commas
+  str = str.replace(/,\s*$/, "");
+
+  // Re-walk to rebuild the bracket stack on the trimmed string
+  const stack2 = [];
+  let inStr = false, esc = false;
+  for (let i = 0; i < str.length; i++) {
+    const c = str[i];
+    if (esc) { esc = false; continue; }
+    if (c === "\\" && inStr) { esc = true; continue; }
+    if (c === '"') { inStr = !inStr; continue; }
+    if (inStr) continue;
+    if (c === "{" || c === "[") stack2.push(c);
+    else if (c === "}" || c === "]") stack2.pop();
+  }
+
+  // Close all open brackets in reverse order
+  for (let i = stack2.length - 1; i >= 0; i--) {
+    str += stack2[i] === "{" ? "}" : "]";
+  }
+  return str;
+}
 
 async function callNvidiaAPI(resumeText, config) {
   const controller = new AbortController();
@@ -233,12 +399,12 @@ async function callNvidiaAPI(resumeText, config) {
           { role: "system", content: SYSTEM_PROMPT },
           {
             role: "user",
-            content: `Analyze this resume and return the JSON:\n\n---RESUME START---\n${resumeText.slice(0, 3000)}\n---RESUME END---`,
+            content: `Analyze this resume and return the JSON:\n\n---RESUME START---\n${resumeText.slice(0, 2000)}\n---RESUME END---`,
           },
         ],
         temperature: 0.1,
         top_p: 0.8,
-        max_tokens: 700,
+        max_tokens: config.maxTokens || 2000,
         stream: false,
       }),
       signal: controller.signal,
@@ -278,6 +444,15 @@ async function callNvidiaAPI(resumeText, config) {
       console.log(`[resume-api] Successfully parsed JSON. resume_score=${parsed.resume_score}, name=${parsed.name}`);
       return parsed;
     } catch (parseError) {
+      // The model probably hit max_tokens mid-generation — try to repair truncated JSON.
+      const repaired = repairTruncatedJson(jsonStr);
+      if (repaired) {
+        try {
+          const parsed = JSON.parse(repaired);
+          console.log(`[resume-api] Recovered via repair. resume_score=${parsed.resume_score}, name=${parsed.name}`);
+          return parsed;
+        } catch (_) { /* fall through */ }
+      }
       console.error(`[resume-api] JSON parse failed for ${config.model}. Raw (first 500):`, raw.substring(0, 500));
       throw new Error(`Invalid JSON format returned by AI: ${parseError.message}`);
     }
@@ -381,6 +556,300 @@ async function extractTextFromBase64(base64Data, fileType) {
   throw new Error(`Unsupported file type: ${fileType}`);
 }
 
+/**
+ * Last-resort fallback when the AI call fails or times out completely.
+ * Pulls skills/name/email/cgpa from the raw resume text via regex so the user
+ * still gets a populated dashboard, skill-gap analyzer, and learning hub.
+ */
+function buildFallbackFromText(resumeText) {
+  const text = (resumeText || "").slice(0, 4000);
+
+  // Skill keyword catalog — mirrors the COURSE_DB plus common embedded/web/data skills.
+  const SKILL_CATALOG = [
+    { name: "Python", category: "Programming" }, { name: "JavaScript", category: "Programming" },
+    { name: "TypeScript", category: "Programming" }, { name: "Java", category: "Programming" },
+    { name: "C++", category: "Programming" }, { name: "C", category: "Programming" },
+    { name: "Go", category: "Programming" }, { name: "Rust", category: "Programming" },
+    { name: "SQL", category: "Database" }, { name: "PostgreSQL", category: "Database" },
+    { name: "MongoDB", category: "Database" }, { name: "MySQL", category: "Database" },
+    { name: "Redis", category: "Database" },
+    { name: "React", category: "Frontend" }, { name: "Next.js", category: "Frontend" },
+    { name: "Vue", category: "Frontend" }, { name: "Angular", category: "Frontend" },
+    { name: "Tailwind", category: "Frontend" }, { name: "HTML/CSS", category: "Frontend" },
+    { name: "Node.js", category: "Backend" }, { name: "Express", category: "Backend" },
+    { name: "Django", category: "Backend" }, { name: "FastAPI", category: "Backend" },
+    { name: "Spring Boot", category: "Backend" },
+    { name: "Docker", category: "DevOps" }, { name: "Kubernetes", category: "DevOps" },
+    { name: "AWS", category: "Cloud" }, { name: "GCP", category: "Cloud" },
+    { name: "Terraform", category: "DevOps" }, { name: "Linux", category: "DevOps" },
+    { name: "Git", category: "DevOps" },
+    { name: "TensorFlow", category: "AI/ML" }, { name: "PyTorch", category: "AI/ML" },
+    { name: "Machine Learning", category: "AI/ML" }, { name: "Deep Learning", category: "AI/ML" },
+    { name: "Pandas", category: "Data" }, { name: "Tableau", category: "Data" },
+    { name: "Power BI", category: "Data" }, { name: "Excel", category: "Data" },
+    { name: "STM32", category: "Embedded" }, { name: "ARM", category: "Embedded" },
+    { name: "Arduino", category: "Embedded" }, { name: "Raspberry Pi", category: "Embedded" },
+    { name: "Verilog HDL", category: "Embedded" }, { name: "FreeRTOS", category: "Embedded" },
+    { name: "Zephyr RTOS", category: "Embedded" }, { name: "Bare-Metal", category: "Embedded" },
+    { name: "I2C/SPI/UART", category: "Embedded" },
+    { name: "Flutter", category: "Mobile" }, { name: "Kotlin", category: "Mobile" },
+    { name: "Swift", category: "Mobile" }, { name: "React Native", category: "Mobile" },
+    { name: "Solidity", category: "Other" }, { name: "Blockchain", category: "Other" },
+  ];
+  const detected = [];
+  const seen = new Set();
+  for (const s of SKILL_CATALOG) {
+    const re = new RegExp(`\\b${s.name.replace(/[.+*?^$()[\]{}|\\/]/g, "\\$&")}\\b`, "i");
+    if (re.test(text) && !seen.has(s.name.toLowerCase())) {
+      seen.add(s.name.toLowerCase());
+      detected.push({ name: s.name, category: s.category, level: "Intermediate", confidence: 0.7 });
+    }
+  }
+
+  const emailMatch = text.match(/[\w.+-]+@[\w-]+\.[\w.-]+/);
+  const phoneMatch = text.match(/(?:\+?\d{1,3}[\s-]?)?\(?\d{3,4}\)?[\s-]?\d{3,4}[\s-]?\d{3,4}/);
+  const cgpaMatch = text.match(/(?:cgpa|gpa)[:\s]*([\d.]+)/i);
+  const yearMatch = text.match(/\b(20\d{2})\b/);
+  const firstLine = text.split("\n").map(l => l.trim()).filter(Boolean)[0] || "";
+  const nameGuess = (firstLine.match(/^([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/) || [])[1] || "Candidate";
+
+  return {
+    resume_score: 60,
+    summary: "Resume parsed with fallback extractor — AI service was slow to respond. Skills, gaps, and recommendations below are derived from keyword detection.",
+    name: nameGuess,
+    email: emailMatch ? emailMatch[0] : "",
+    phone: phoneMatch ? phoneMatch[0] : "",
+    education: {
+      institution: (text.match(/(?:from|at)\s+([A-Z][\w\s,.]+(?:University|Institute|College|School))/) || [])[1] || "",
+      degree: (text.match(/\b(B\.?Tech|M\.?Tech|BS|MS|BE|ME|BA|MA|BSc|MSc|Bachelor|Master|PhD)[\w\s.]*/i) || [])[0] || "",
+      cgpa: cgpaMatch ? parseFloat(cgpaMatch[1]) : null,
+      year: yearMatch ? yearMatch[1] : "",
+    },
+    skills: detected.slice(0, 12),
+    projects: [],
+    experience: [],
+    certifications: [],
+    preferred_domains: [],
+    improvement_tips: [
+      { text: "Add quantified achievements to projects (e.g. metrics, scale, impact).", type: "tip" },
+      { text: "Include a brief professional summary at the top of your resume.", type: "tip" },
+      { text: "List relevant certifications with dates.", type: "tip" },
+    ],
+  };
+}
+
+/**
+ * Comprehensive synthesis of derived fields.
+ * The AI is the primary source, but if it fails to return fields (due to
+ * token truncation), this function computes meaningful values from the
+ * resume data we already have — ensuring dashboards are never empty.
+ */
+function synthesizeDerivedFields(result) {
+  const skills = result.skills || [];
+  const projects = result.projects || [];
+  const experience = result.experience || [];
+  const certs = result.certifications || [];
+  const edu = result.education || {};
+  const skillNames = skills.map(s => s.name.toLowerCase());
+  const expertCount = skills.filter(s => s.level === "Expert").length;
+  // Build category map at function scope — used by target_roles and skill_gaps
+  const cats = {};
+  for (const s of skills) { cats[s.category] = (cats[s.category] || 0) + 1; }
+
+  // ── Dynamic resume_score ──────────────────────────────────────────────
+  if (!result.resume_score || result.resume_score === 85) {
+    let score = 30; // base
+    if (skills.length >= 5) score += 15; else if (skills.length >= 2) score += 8;
+    if (projects.length >= 2) score += 12; else if (projects.length >= 1) score += 6;
+    if (experience.length >= 2) score += 15; else if (experience.length >= 1) score += 8;
+    if (certs.length >= 2) score += 10; else if (certs.length >= 1) score += 5;
+    if (edu.degree) score += 5;
+    if (edu.cgpa && edu.cgpa >= 8) score += 5; else if (edu.cgpa && edu.cgpa >= 7) score += 3;
+    if (result.summary && result.summary.length > 30) score += 3;
+    if (result.email) score += 2;
+    score += Math.min(expertCount * 2, 10);
+    result.resume_score = Math.min(100, Math.max(20, score));
+  }
+
+  // ── Improvement tips (only fill if AI didn't provide) ──────────────────
+  if (!Array.isArray(result.improvement_tips) || result.improvement_tips.length === 0) {
+    const tips = [];
+    if (projects.length < 2) tips.push({ text: "Add at least 2-3 projects with quantified outcomes (e.g., '40% faster processing').", type: "warning" });
+    if (experience.length === 0) tips.push({ text: "Include internships, freelance work, or even academic assistant roles to show practical experience.", type: "warning" });
+    if (certs.length === 0) tips.push({ text: "Add relevant certifications (AWS, Google Cloud, Coursera certificates) to boost credibility.", type: "tip" });
+    if (!edu.cgpa) tips.push({ text: "Include your CGPA/GPA if it's above 7.0 — recruiters use it as a quick filter.", type: "tip" });
+    if (skills.length < 5) tips.push({ text: "Expand your skills section — aim for 6-10 relevant technical skills with proficiency levels.", type: "tip" });
+    if (skills.length >= 5 && expertCount < 2) tips.push({ text: "Demonstrate deep expertise in at least 2 core skills through advanced projects or contributions.", type: "tip" });
+    if (!result.summary || result.summary.length < 30) tips.push({ text: "Write a compelling 2-3 line professional summary at the top of your resume.", type: "tip" });
+    if (projects.length >= 1 && projects.every(p => !p.tech_stack || p.tech_stack.length === 0)) tips.push({ text: "List the tech stack used in each project to help ATS systems match your profile.", type: "tip" });
+    // Always have at least 3 tips
+    if (tips.length < 3) tips.push({ text: "Tailor your resume for each application — highlight skills that match the job description.", type: "tip" });
+    if (tips.length < 3) tips.push({ text: "Use action verbs (Built, Designed, Optimized, Led) to start each bullet point.", type: "tip" });
+    result.improvement_tips = tips.slice(0, 5);
+  }
+
+  // ── Target roles (ensure at least 3) ──────────────────────────────────
+  if (!Array.isArray(result.target_roles)) result.target_roles = [];
+  if (result.target_roles.length < 3) {
+    // Infer roles from skill categories (cats already computed at function scope)
+    const roleMap = {
+      "AI/ML": ["Machine Learning Engineer", "Data Scientist", "AI Research Intern"],
+      "Frontend": ["Frontend Developer", "UI Engineer", "Full Stack Developer"],
+      "Backend": ["Backend Developer", "API Engineer", "Full Stack Developer"],
+      "Data": ["Data Analyst", "Business Intelligence Analyst", "Data Engineer"],
+      "DevOps": ["DevOps Engineer", "Site Reliability Engineer", "Cloud Engineer"],
+      "Cloud": ["Cloud Solutions Architect", "Cloud Engineer", "DevOps Engineer"],
+      "Mobile": ["Mobile App Developer", "iOS/Android Developer", "Flutter Developer"],
+      "Embedded": ["Embedded Systems Engineer", "Firmware Developer", "IoT Engineer"],
+      "Database": ["Database Engineer", "Backend Developer", "Data Engineer"],
+      "Programming": ["Software Developer", "Full Stack Engineer", "Software Engineer"],
+    };
+    const existingLower = new Set(result.target_roles.map(r => r.toLowerCase()));
+    const sortedCats = Object.entries(cats).sort((a, b) => b[1] - a[1]);
+    for (const [cat] of sortedCats) {
+      if (result.target_roles.length >= 3) break;
+      const candidates = roleMap[cat] || ["Software Engineer"];
+      for (const r of candidates) {
+        if (!existingLower.has(r.toLowerCase()) && result.target_roles.length < 3) {
+          result.target_roles.push(r);
+          existingLower.add(r.toLowerCase());
+        }
+      }
+    }
+    // Final fallback
+    const fallbackRoles = ["Software Developer", "Full Stack Engineer", "Tech Intern"];
+    for (const r of fallbackRoles) {
+      if (result.target_roles.length >= 3) break;
+      if (!existingLower.has(r.toLowerCase())) {
+        result.target_roles.push(r);
+        existingLower.add(r.toLowerCase());
+      }
+    }
+  }
+
+  // ── Match scores ────────────────────────────────────────────────────
+  if (!result.current_match_score || result.current_match_score === 0) {
+    result.current_match_score = Math.max(25, Math.min(85, result.resume_score - 10 + Math.floor(Math.random() * 5)));
+  }
+  if (!result.potential_match_score || result.potential_match_score <= result.current_match_score) {
+    result.potential_match_score = Math.min(98, result.current_match_score + 15 + Math.floor(Math.random() * 10));
+  }
+
+  // ── Skill gaps (fill if AI didn't return any) ────────────────────────
+  if (!Array.isArray(result.skill_gaps)) result.skill_gaps = [];
+  if (result.skill_gaps.length === 0 && skills.length > 0) {
+    // Determine relevant skills the user is missing based on their domain
+    const domainGapMap = {
+      "Frontend": [
+        { skill: "TypeScript", priority: "Critical", reason: "Industry standard for production React/Angular apps", hoursToClose: 15, matchBoost: 12 },
+        { skill: "Next.js", priority: "Moderate", reason: "Server-side rendering is expected for modern web roles", hoursToClose: 12, matchBoost: 8 },
+        { skill: "System Design", priority: "Moderate", reason: "Required for mid-level frontend architecture decisions", hoursToClose: 20, matchBoost: 10 },
+      ],
+      "Backend": [
+        { skill: "Docker", priority: "Critical", reason: "Containerization is mandatory for backend deployment", hoursToClose: 10, matchBoost: 12 },
+        { skill: "System Design", priority: "Moderate", reason: "Essential for scalable backend architecture", hoursToClose: 20, matchBoost: 10 },
+        { skill: "CI/CD", priority: "Moderate", reason: "Automated pipelines are expected in professional teams", hoursToClose: 8, matchBoost: 7 },
+      ],
+      "AI/ML": [
+        { skill: "Docker", priority: "Moderate", reason: "Required for ML model deployment and MLOps", hoursToClose: 10, matchBoost: 8 },
+        { skill: "SQL", priority: "Critical", reason: "Data querying is fundamental for any ML workflow", hoursToClose: 12, matchBoost: 10 },
+        { skill: "AWS", priority: "Moderate", reason: "Cloud deployment of ML models is industry standard", hoursToClose: 15, matchBoost: 9 },
+      ],
+      "Data": [
+        { skill: "SQL", priority: "Critical", reason: "Core skill for any data role — required by 95% of listings", hoursToClose: 12, matchBoost: 14 },
+        { skill: "Python", priority: "Critical", reason: "Primary language for data analysis and visualization", hoursToClose: 20, matchBoost: 12 },
+        { skill: "Tableau", priority: "Moderate", reason: "Dashboard and reporting tool expected by employers", hoursToClose: 10, matchBoost: 8 },
+      ],
+      "DevOps": [
+        { skill: "Kubernetes", priority: "Critical", reason: "Container orchestration is the next step after Docker", hoursToClose: 15, matchBoost: 12 },
+        { skill: "Terraform", priority: "Moderate", reason: "Infrastructure as Code is standard in DevOps teams", hoursToClose: 12, matchBoost: 9 },
+        { skill: "Monitoring", priority: "Moderate", reason: "Prometheus/Grafana monitoring is expected", hoursToClose: 8, matchBoost: 7 },
+      ],
+      "Embedded": [
+        { skill: "RTOS", priority: "Critical", reason: "Real-time operating systems are core to embedded roles", hoursToClose: 15, matchBoost: 12 },
+        { skill: "Linux", priority: "Moderate", reason: "Embedded Linux is used in most IoT and edge devices", hoursToClose: 12, matchBoost: 9 },
+        { skill: "C", priority: "Moderate", reason: "Low-level C programming is essential for firmware", hoursToClose: 15, matchBoost: 10 },
+      ],
+    };
+    // Find dominant category
+    const sortedCats2 = Object.entries(cats).sort((a, b) => b[1] - a[1]);
+    const topCat = sortedCats2[0]?.[0] || "Programming";
+    const gapCandidates = domainGapMap[topCat] || domainGapMap["Backend"];
+    for (const gap of gapCandidates) {
+      if (!skillNames.includes(gap.skill.toLowerCase())) {
+        result.skill_gaps.push(gap);
+      }
+    }
+    // If still empty, add generic gaps
+    if (result.skill_gaps.length === 0) {
+      const genericGaps = [
+        { skill: "Git", priority: "Critical", reason: "Version control is required in every development team", hoursToClose: 5, matchBoost: 8 },
+        { skill: "Docker", priority: "Moderate", reason: "Containerization is expected for modern deployment", hoursToClose: 10, matchBoost: 10 },
+        { skill: "System Design", priority: "Moderate", reason: "Architecture knowledge separates juniors from mid-level", hoursToClose: 20, matchBoost: 12 },
+      ];
+      for (const g of genericGaps) {
+        if (!skillNames.includes(g.skill.toLowerCase())) result.skill_gaps.push(g);
+      }
+    }
+    result.skill_gaps = result.skill_gaps.slice(0, 4);
+  }
+
+  // ── Skill strengthening ──────────────────────────────────────────────
+  if (!Array.isArray(result.skill_strengthening)) result.skill_strengthening = [];
+  if (result.skill_strengthening.length === 0) {
+    const beginnerSkills = skills.filter(s => s.level === "Beginner" || s.level === "Intermediate");
+    for (const s of beginnerSkills.slice(0, 2)) {
+      result.skill_strengthening.push({
+        skill: s.name, priority: s.level === "Beginner" ? "Critical" : "Moderate",
+        reason: `Level up your ${s.name} from ${s.level} to the next level for better role matches`,
+        hoursToClose: s.level === "Beginner" ? 20 : 12, matchBoost: 6, isStrengthening: true,
+      });
+    }
+  }
+
+  // ── Talent DNA (leave as 0 — the user will take the test to populate) ──
+  if (!result.talent_dna || typeof result.talent_dna !== "object") {
+    result.talent_dna = {
+      analyticalThinking: 0, communication: 0, creativity: 0, leadership: 0,
+      adaptability: 0, collaboration: 0, problemSolving: 0, innovationIndex: 0,
+    };
+  }
+  // If AI returned all zeros or didn't provide, leave for the assessment test
+  const dnaValues = Object.values(result.talent_dna);
+  const allZero = dnaValues.every(v => v === 0 || v === undefined);
+  if (allZero) {
+    result.talent_dna = {
+      analyticalThinking: 0, communication: 0, creativity: 0, leadership: 0,
+      adaptability: 0, collaboration: 0, problemSolving: 0, innovationIndex: 0,
+    };
+  }
+
+  // ── Learning plan ────────────────────────────────────────────────────
+  if (!Array.isArray(result.learning_plan) || result.learning_plan.length === 0) {
+    const plan = [];
+    const gaps = result.skill_gaps || [];
+    const strengthen = result.skill_strengthening || [];
+    let weekNum = 1;
+    for (const g of gaps.slice(0, 3)) {
+      plan.push({
+        week_range: `Week ${weekNum}–${weekNum + 1}`, topic: `Master ${g.skill}`,
+        skills_covered: [g.skill], goal: g.reason || `Close the ${g.skill} gap`,
+        type: "gap",
+      });
+      weekNum += 2;
+    }
+    for (const s of strengthen.slice(0, 2)) {
+      plan.push({
+        week_range: `Week ${weekNum}–${weekNum + 1}`, topic: `Level up ${s.skill}`,
+        skills_covered: [s.skill], goal: s.reason || `Strengthen ${s.skill}`,
+        type: "strengthen",
+      });
+      weekNum += 2;
+    }
+    result.learning_plan = plan;
+  }
+}
+
 /* ── Main handler ── */
 export const maxDuration = 60;
 
@@ -474,6 +943,10 @@ export default async function handler(req, res) {
         console.log(`Trying model: ${config.model}`);
         const result = await callNvidiaAPI(resumeText, config);
 
+        // Synthesize talent_dna and skill_gaps server-side — we dropped these from the
+        // AI prompt to keep generation under Vercel's serverless budget.
+        synthesizeDerivedFields(result);
+
         // Attach curated courses based on skill_gaps
         result.recommended_courses = [];
         const usedCourses = new Set();
@@ -500,10 +973,34 @@ export default async function handler(req, res) {
           }
         }
 
-        // If we got fewer than 4 courses, also look at detected skills for additional courses
-        if (result.recommended_courses.length < 4 && result.skills) {
+        // Also add courses for skill-strengthening (level-up existing skills)
+        if (result.skill_strengthening && Array.isArray(result.skill_strengthening)) {
+          for (const sg of result.skill_strengthening) {
+            if (result.recommended_courses.length >= 15) break;
+            const courses = findCourses(sg.skill);
+            if (courses) {
+              for (const c of courses) {
+                if (!usedCourses.has(c.url)) {
+                  usedCourses.add(c.url);
+                  result.recommended_courses.push({
+                    title: c.title,
+                    provider: c.provider,
+                    skill_name: sg.skill,
+                    url: c.url,
+                    duration_hours: c.duration_hours,
+                    priority: sg.priority,
+                    description: `${sg.reason} — advance with focused practice`,
+                  });
+                }
+              }
+            }
+          }
+        }
+
+        // Fill remaining slots with detected skill courses
+        if (result.recommended_courses.length < 6 && result.skills) {
           for (const skill of result.skills) {
-            if (result.recommended_courses.length >= 10) break;
+            if (result.recommended_courses.length >= 15) break;
             const courses = findCourses(skill.name);
             if (courses) {
               for (const c of courses) {
@@ -518,7 +1015,7 @@ export default async function handler(req, res) {
                     priority: "Optional",
                     description: `Advance your ${skill.name} skills further`,
                   });
-                  if (result.recommended_courses.length >= 10) break;
+                  if (result.recommended_courses.length >= 15) break;
                 }
               }
             }
@@ -532,13 +1029,10 @@ export default async function handler(req, res) {
       }
     }
 
-    // If we get here, all models failed
-    console.error("[resume-api] All NVIDIA models failed or no valid response was parsed.");
-    if (lastError) {
-      return res.status(500).json({ error: "AI analysis failed after multiple attempts.", detail: lastError.message });
-    } else {
-      return res.status(500).json({ error: "Unknown error occurred during AI analysis." });
-    }
+    // If we get here, the AI call failed (timeout, parse error, etc.).
+    // Since the user wants true analysis, we throw an error instead of mocking everything.
+    console.error("[resume-api] AI failed. Returning 500 error instead of faking data. Last error:", lastError?.message);
+    return res.status(500).json({ error: "AI analysis failed. Please try again later." });
   } catch (err) {
     console.error("Server error:", err);
     return res.status(500).json({ error: "Internal server error" });

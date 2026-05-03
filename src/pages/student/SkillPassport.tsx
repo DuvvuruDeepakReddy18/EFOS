@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Shield, CheckCircle2, Download, QrCode, Clock, Award, Upload, AlertCircle } from 'lucide-react';
+import { Shield, CheckCircle2, Download, QrCode, Clock, Award, Upload, Briefcase, GraduationCap, TrendingUp, Brain } from 'lucide-react';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 import { useResumeStore } from '@/store/resumeStore';
 import { useAuthStore } from '@/store/authStore';
@@ -11,13 +11,37 @@ const levelColors: Record<string, string> = {
   Beginner: 'from-gray-500 to-gray-400',
 };
 
+const dnaLabels: Record<string, string> = {
+  analyticalThinking: 'Analytical Thinking',
+  creativity: 'Creativity',
+  leadership: 'Leadership',
+  adaptability: 'Adaptability',
+  communication: 'Communication',
+  collaboration: 'Collaboration',
+  problemSolving: 'Problem Solving',
+  innovationIndex: 'Innovation',
+};
+
+const dnaColors: Record<string, string> = {
+  analyticalThinking: 'from-blue-500 to-cyan-500',
+  creativity: 'from-purple-500 to-pink-500',
+  leadership: 'from-amber-500 to-orange-500',
+  adaptability: 'from-green-500 to-emerald-500',
+  communication: 'from-rose-500 to-red-500',
+  collaboration: 'from-indigo-500 to-violet-500',
+  problemSolving: 'from-teal-500 to-cyan-500',
+  innovationIndex: 'from-fuchsia-500 to-pink-500',
+};
+
 export default function SkillPassport() {
   const { user } = useAuthStore();
-  const { isAnalyzed, result, getPassportSkills, getRadarData } = useResumeStore();
+  const { isAnalyzed, result, getPassportSkills, getRadarData, getSkillsByCategory, getSkillLevelDistribution } = useResumeStore();
   const navigate = useNavigate();
 
   const skills = getPassportSkills();
   const radarData = getRadarData();
+  const categoryDist = getSkillsByCategory();
+  const levelDist = getSkillLevelDistribution();
 
   if (!isAnalyzed || !result) {
     return (
@@ -48,6 +72,9 @@ export default function SkillPassport() {
 
   const verifiedCount = skills.filter(s => s.verified).length;
   const completeness = Math.min(100, Math.round((skills.length / 15) * 100));
+  const talentDna = result.talent_dna || {};
+  const experience = result.experience || [];
+  const certifications = result.certifications || [];
 
   return (
     <div className="space-y-6">
@@ -74,7 +101,7 @@ export default function SkillPassport() {
             <p className="text-sm text-gray-400">
               {result.education?.degree || user?.department || 'Computer Science'} • {result.education?.institution || user?.institution || 'University'}
             </p>
-            <div className="flex items-center gap-4 mt-3">
+            <div className="flex items-center gap-4 mt-3 flex-wrap">
               <div className="flex items-center gap-1.5">
                 <Award size={14} className="text-amber-400" />
                 <span className="text-xs text-gray-300">{verifiedCount} Verified Skills</span>
@@ -86,6 +113,12 @@ export default function SkillPassport() {
               {result.education?.cgpa && (
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs text-blue-400">CGPA: {result.education.cgpa}</span>
+                </div>
+              )}
+              {result.education?.year && (
+                <div className="flex items-center gap-1.5">
+                  <GraduationCap size={14} className="text-purple-400" />
+                  <span className="text-xs text-gray-300">{result.education.year}</span>
                 </div>
               )}
             </div>
@@ -141,10 +174,48 @@ export default function SkillPassport() {
         </motion.div>
       )}
 
+      {/* Skill Level Distribution + Category Breakdown */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}
+          className="glass-card p-5">
+          <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2"><TrendingUp size={14} className="text-blue-400" /> Skill Level Distribution</h3>
+          <div className="space-y-3">
+            {(['Expert', 'Intermediate', 'Beginner'] as const).map(level => {
+              const count = levelDist[level];
+              const pct = skills.length > 0 ? Math.round((count / skills.length) * 100) : 0;
+              return (
+                <div key={level}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-gray-300">{level}</span>
+                    <span className="text-xs text-gray-400">{count} skill{count !== 1 ? 's' : ''} ({pct}%)</span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-white/5">
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, delay: 0.3 }}
+                      className={`h-full rounded-full bg-gradient-to-r ${levelColors[level]}`} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}
+          className="glass-card p-5">
+          <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2"><Shield size={14} className="text-purple-400" /> Skill Categories</h3>
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(categoryDist).sort((a, b) => b[1] - a[1]).map(([cat, count]) => (
+              <span key={cat} className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-gray-300">
+                {cat} <span className="text-blue-400 font-bold ml-1">{count}</span>
+              </span>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+
       {/* Skill Radar + Skills Grid */}
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Radar Chart */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="glass-card p-6">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="glass-card p-6">
           <h3 className="text-base font-bold text-white mb-4">Skill Profile Visualization</h3>
           {radarData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
@@ -191,6 +262,59 @@ export default function SkillPassport() {
           </div>
         </motion.div>
       </div>
+
+      {/* Experience Section */}
+      {experience.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="glass-card p-6">
+          <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2"><Briefcase size={16} className="text-amber-400" /> Experience</h3>
+          <div className="grid md:grid-cols-2 gap-3">
+            {experience.map((exp, i) => (
+              <div key={i} className="p-4 rounded-xl bg-white/[0.02] border border-white/5">
+                <p className="text-sm font-medium text-white">{exp.role}</p>
+                <p className="text-xs text-gray-400 mt-1">{exp.company} • {exp.duration}</p>
+                {exp.domain && <span className="inline-block mt-2 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-400">{exp.domain}</span>}
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Certifications Section */}
+      {certifications.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="glass-card p-6">
+          <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2"><GraduationCap size={16} className="text-green-400" /> Certifications</h3>
+          <div className="flex flex-wrap gap-2">
+            {certifications.map((cert, i) => (
+              <span key={i} className="px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/20 text-xs text-green-400 flex items-center gap-1.5">
+                <Award size={12} /> {cert}
+              </span>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Talent DNA Breakdown */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }} className="glass-card p-6">
+        <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2"><Brain size={16} className="text-fuchsia-400" /> AI-Inferred Talent DNA</h3>
+        <div className="grid md:grid-cols-2 gap-x-6 gap-y-3">
+          {Object.entries(talentDna).map(([key, value]) => (
+            <div key={key}>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-gray-300">{dnaLabels[key] || key}</span>
+                <span className="text-xs font-bold text-white">{value}%</span>
+              </div>
+              <div className="w-full h-2 rounded-full bg-white/5">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${value}%` }}
+                  transition={{ duration: 1, delay: 0.5 }}
+                  className={`h-full rounded-full bg-gradient-to-r ${dnaColors[key] || 'from-blue-500 to-cyan-500'}`}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
     </div>
   );
 }

@@ -3,8 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Bot, User, Sparkles, Trash2, Loader2, MessageCircle } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
-const SUPABASE_URL = 'https://irqtxxeymkamuwketglk.supabase.co';
-const CHATBOT_URL = `${SUPABASE_URL}/functions/v1/chatbot`;
+const CHATBOT_URL = '/api/chatbot';
 
 interface Message {
   id: string;

@@ -1,12 +1,85 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Map, ArrowRight, TrendingUp, AlertTriangle, Sparkles, CheckCircle2, Target } from 'lucide-react';
-import { mockCareerPath } from '@/data/mockData';
+import { Map, ArrowRight, TrendingUp, AlertTriangle, Sparkles, CheckCircle2, Target, Upload, BookOpen, ChevronDown } from 'lucide-react';
 import { useResumeStore } from '@/store/resumeStore';
+import { useNavigate, Link } from 'react-router-dom';
 
 export default function CareerPathway() {
-  const result = useResumeStore((state) => state.result);
-  const targetRole = result?.target_roles?.[0] || 'Software Engineer';
-  const predictedScore = result?.potential_match_score || 92;
+  const { isAnalyzed, result } = useResumeStore();
+  const navigate = useNavigate();
+  
+  const [selectedRole, setSelectedRole] = useState(result?.target_roles?.[0] || 'Software Engineer');
+
+  if (!isAnalyzed || !result) {
+    return (
+      <div className="space-y-6">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="flex items-center gap-3 mb-1">
+            <Map size={24} className="text-purple-400" />
+            <h1 className="text-2xl font-bold text-white">AI Career Pathway Planner</h1>
+          </div>
+          <p className="text-sm text-gray-400">AI-generated internship roadmap tailored to your career goals</p>
+        </motion.div>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+          className="glass-card p-12 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-purple-500/10 flex items-center justify-center mx-auto mb-4">
+            <Upload size={28} className="text-purple-400" />
+          </div>
+          <h2 className="text-lg font-bold text-white mb-2">No Resume Analyzed Yet</h2>
+          <p className="text-sm text-gray-400 mb-6 max-w-md mx-auto">
+            Upload your resume to get a personalized AI-generated career pathway and internship roadmap.
+          </p>
+          <button onClick={() => navigate('/student/resume')} className="glow-btn text-sm flex items-center gap-2 mx-auto">
+            <Upload size={14} /> Go to Resume Upload
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  const availableRoles = result.target_roles?.length ? result.target_roles : ['Software Engineer'];
+  const predictedScore = result.potential_match_score || 92;
+  const currentScore = result.current_match_score || 40;
+
+  // Calculate monotonic score progression
+  const scoreDiff = Math.max(0, predictedScore - currentScore);
+  const phase1Score = Math.floor(currentScore + scoreDiff * 0.25);
+  const phase2Score = Math.floor(currentScore + scoreDiff * 0.50);
+  const phase3Score = Math.floor(currentScore + scoreDiff * 0.75);
+
+  // Generate dynamic career path based on user's gaps and skills
+  const dynamicCareerPath = [
+    { 
+      semester: 'Phase 1: Skill Up', 
+      role: 'Skill Building & Mini Projects', 
+      level: 'Entry', 
+      skills: (result.skill_gaps || []).slice(0, 3).map(g => g.skill), 
+      predictedScore: phase1Score,
+      action: { label: 'Go to Learning Hub', link: '/student/learning-hub' }
+    },
+    { 
+      semester: 'Phase 2: Foundation', 
+      role: 'Foundational Internship', 
+      level: 'Entry', 
+      skills: (result.recommended_courses || []).slice(0, 3).map(c => c.skill_name), 
+      predictedScore: phase2Score,
+      action: { label: 'View Courses', link: '/student/learning-hub' }
+    },
+    { 
+      semester: 'Phase 3: Specialization', 
+      role: `Junior ${selectedRole}`, 
+      level: 'Mid', 
+      skills: [...(result.skills || []).slice(0, 2).map(s => s.name), 'Problem Solving'], 
+      predictedScore: phase3Score 
+    },
+    { 
+      semester: 'Phase 4: Target', 
+      role: selectedRole, 
+      level: 'Advanced', 
+      skills: (result.skills || []).slice(0, 3).map(s => s.name), 
+      predictedScore: predictedScore 
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -23,12 +96,25 @@ export default function CareerPathway() {
         className="glass-card p-6 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/10 rounded-full blur-[80px] pointer-events-none" />
         <div className="relative z-10 flex items-center gap-6">
-          <div>
-            <p className="text-xs text-gray-400 mb-1">Career Goal</p>
-            <h2 className="text-2xl font-bold gradient-text">{targetRole}</h2>
-            <p className="text-sm text-gray-400 mt-1">4-semester roadmap to reach your dream role</p>
+          <div className="flex-1">
+            <p className="text-xs text-gray-400 mb-2">Career Goal</p>
+            <div className="relative inline-block">
+              <select
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value)}
+                className="appearance-none bg-white/5 border border-white/10 rounded-xl px-4 py-2 pr-10 text-xl font-bold text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 cursor-pointer"
+              >
+                {availableRoles.map(role => (
+                  <option key={role} value={role} className="bg-[#0f0c29] text-white">
+                    {role}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            </div>
+            <p className="text-sm text-gray-400 mt-2">4-phase roadmap to reach your dream role</p>
           </div>
-          <div className="ml-auto text-center">
+          <div className="ml-auto text-center pl-6 border-l border-white/10">
             <Target size={20} className="text-purple-400 mx-auto mb-1" />
             <p className="text-xs text-gray-400">Predicted Score</p>
             <p className="text-2xl font-bold text-green-400">{predictedScore}<span className="text-sm text-gray-400">/100</span></p>
@@ -45,7 +131,7 @@ export default function CareerPathway() {
           <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-500 via-purple-500 to-green-500 opacity-30" />
 
           <div className="space-y-6">
-            {mockCareerPath.map((step, i) => (
+            {dynamicCareerPath.map((step, i) => (
               <motion.div
                 key={step.semester}
                 initial={{ opacity: 0, x: -30 }}
@@ -79,11 +165,19 @@ export default function CareerPathway() {
                       <span key={s} className="px-2 py-0.5 rounded-md bg-white/5 text-[10px] text-gray-300 border border-white/5">{s}</span>
                     ))}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 h-1.5 rounded-full bg-white/5">
-                      <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-green-500" style={{ width: `${step.predictedScore}%` }} />
+                  <div className="flex items-center justify-between gap-4 mt-2">
+                    <div className="flex items-center gap-2 flex-1">
+                      <div className="flex-1 h-1.5 rounded-full bg-white/5">
+                        <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-green-500" style={{ width: `${step.predictedScore}%` }} />
+                      </div>
+                      <span className="text-xs font-bold text-white">{step.predictedScore}%</span>
                     </div>
-                    <span className="text-xs font-bold text-white">{step.predictedScore}%</span>
+                    {step.action && (
+                      <Link to={step.action.link} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors border border-blue-500/20 text-xs font-medium">
+                        <BookOpen size={12} />
+                        {step.action.label}
+                      </Link>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -105,7 +199,7 @@ export default function CareerPathway() {
           </p>
           <div className="flex items-center gap-3">
             <CheckCircle2 size={14} className="text-green-400" />
-            <span className="text-xs text-gray-300">On track for {targetRole} roles at top companies</span>
+            <span className="text-xs text-gray-300">On track for {selectedRole} roles at top companies</span>
           </div>
         </motion.div>
 
@@ -117,11 +211,11 @@ export default function CareerPathway() {
           <div className="space-y-3">
             <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-500/[0.05] border border-amber-500/10">
               <TrendingUp size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-gray-300">Data Science roles may saturate by 2028. Consider <span className="text-blue-400 font-medium">MLOps specialization</span> as a differentiator.</p>
+              <p className="text-xs text-gray-300">Based on your gaps, consider focusing heavily on <span className="text-blue-400 font-medium">{result.skill_gaps?.[0]?.skill || 'core fundamentals'}</span> to avoid bottlenecks.</p>
             </div>
             <div className="flex items-start gap-2 p-3 rounded-lg bg-green-500/[0.05] border border-green-500/10">
               <Sparkles size={14} className="text-green-400 flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-gray-300">Your ECE + Python combo opens unique <span className="text-green-400 font-medium">Embedded AI</span> roles — a growing niche.</p>
+              <p className="text-xs text-gray-300">Your current proficiency in <span className="text-green-400 font-medium">{result.skills?.[0]?.name || 'key technologies'}</span> gives you a competitive advantage.</p>
             </div>
           </div>
         </motion.div>

@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(node test-models.js)",
+      "Bash(node test-realtime.js)",
+      "Bash(vercel --version)",
+      "Bash(git ls-remote *)",
+      "Bash(vercel whoami *)",
+      "Bash(vercel --prod --yes)",
+      "Bash(vercel inspect *)"
+    ]
+  }
+}

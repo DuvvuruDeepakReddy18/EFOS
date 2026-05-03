@@ -1,35 +1,39 @@
-import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, Play, Trophy, Award, Clock, Star, Zap, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { BookOpen, Clock, ExternalLink, Upload, Calendar, Target, TrendingUp, Play, CheckCircle2, Flame, Star, AlertTriangle } from 'lucide-react';
 import { useResumeStore } from '@/store/resumeStore';
-import { mockChallenges } from '@/data/mockData';
 
-const tabs = ['My Plan', 'Courses', 'Challenges'];
+const priorityOrder = ['Critical', 'Moderate', 'Optional'] as const;
+const priorityConfig: Record<string, { color: string; bg: string; border: string; icon: typeof AlertTriangle; label: string }> = {
+  Critical: { color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/20', icon: AlertTriangle, label: 'Must Learn' },
+  Moderate: { color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20', icon: Flame, label: 'Should Learn' },
+  Optional: { color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/20', icon: Star, label: 'Nice to Know' },
+};
 
 export default function LearningHub() {
-  const [activeTab, setActiveTab] = useState('My Plan');
+  const { isAnalyzed, result, getRecommendedCourses } = useResumeStore();
   const navigate = useNavigate();
-  const { isAnalyzed, getLearningPlan, getRecommendedCourses } = useResumeStore();
+  const courses = getRecommendedCourses();
+  const learningPlan = result?.learning_plan || [];
 
-  if (!isAnalyzed) {
+  if (!isAnalyzed || !result) {
     return (
       <div className="space-y-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex items-center gap-3 mb-1">
             <BookOpen size={24} className="text-green-400" />
-            <h1 className="text-2xl font-bold text-white">AI Skill Learning Hub</h1>
+            <h1 className="text-2xl font-bold text-white">Learning Hub</h1>
           </div>
-          <p className="text-sm text-gray-400">Personalized learning paths to boost your internship match scores</p>
+          <p className="text-sm text-gray-400">Curated courses and a personalized learning roadmap</p>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
           className="glass-card p-12 text-center">
           <div className="w-16 h-16 rounded-2xl bg-green-500/10 flex items-center justify-center mx-auto mb-4">
             <Upload size={28} className="text-green-400" />
           </div>
-          <h2 className="text-lg font-bold text-white mb-2">Resume Analysis Required</h2>
+          <h2 className="text-lg font-bold text-white mb-2">No Resume Analyzed Yet</h2>
           <p className="text-sm text-gray-400 mb-6 max-w-md mx-auto">
-            Your personalized learning hub requires resume analysis. Upload your resume to get AI-tailored course recommendations.
+            Upload your resume to get personalized course recommendations and a structured learning plan.
           </p>
           <button onClick={() => navigate('/student/resume')} className="glow-btn text-sm flex items-center gap-2 mx-auto">
             <Upload size={14} /> Go to Resume Upload
@@ -39,149 +43,182 @@ export default function LearningHub() {
     );
   }
 
-  const learningPlan = getLearningPlan();
-  const recommendedCourses = getRecommendedCourses();
+  // Group courses by priority
+  const groupedCourses: Record<string, typeof courses> = {};
+  for (const p of priorityOrder) groupedCourses[p] = [];
+  for (const c of courses) {
+    const p = c.priority || 'Optional';
+    if (!groupedCourses[p]) groupedCourses[p] = [];
+    groupedCourses[p].push(c);
+  }
+
+  const totalHours = courses.reduce((s, c) => s + (c.duration_hours || 0), 0);
+  const completedWeeks = learningPlan.filter(w => w.status === 'Completed').length;
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center gap-3 mb-1">
           <BookOpen size={24} className="text-green-400" />
-          <h1 className="text-2xl font-bold text-white">AI Skill Learning Hub</h1>
+          <h1 className="text-2xl font-bold text-white">Learning Hub</h1>
         </div>
-        <p className="text-sm text-gray-400">Personalized learning paths to boost your internship match scores</p>
+        <p className="text-sm text-gray-400">Curated courses and a personalized learning roadmap</p>
       </motion.div>
 
-      {/* Tabs */}
-      <div className="flex gap-2">
-        {tabs.map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-              activeTab === tab
-                ? 'bg-blue-500/15 border border-blue-500/30 text-blue-400'
-                : 'bg-white/[0.02] border border-white/5 text-gray-400 hover:text-white'
-            }`}
-          >{tab}</button>
+      {/* Stats */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+        className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { label: 'Total Courses', value: courses.length, icon: BookOpen, color: 'text-green-400', bg: 'bg-green-500/10' },
+          { label: 'Learning Hours', value: `${totalHours}h`, icon: Clock, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+          { label: 'Plan Weeks', value: learningPlan.length, icon: Calendar, color: 'text-purple-400', bg: 'bg-purple-500/10' },
+          { label: 'Completed', value: `${completedWeeks}/${learningPlan.length}`, icon: CheckCircle2, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+        ].map((stat, i) => (
+          <div key={i} className="glass-card p-4 flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-xl ${stat.bg} flex items-center justify-center`}>
+              <stat.icon size={18} className={stat.color} />
+            </div>
+            <div>
+              <p className="text-lg font-bold text-white">{stat.value}</p>
+              <p className="text-[10px] text-gray-500">{stat.label}</p>
+            </div>
+          </div>
         ))}
-      </div>
+      </motion.div>
 
-      {/* My Plan Tab */}
-      {activeTab === 'My Plan' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-          <div className="glass-card p-6">
-            <h3 className="text-base font-bold text-white mb-4">AI-Generated Learning Plan</h3>
-            <p className="text-sm text-gray-400 mb-6">Personalized path to close your skill gaps</p>
-            {learningPlan.length === 0 ? (
-              <p className="text-sm text-gray-500">No learning plan required based on your current skills.</p>
-            ) : (
-              <div className="space-y-4">
-                {learningPlan.map((item, i) => {
-                  const colors = [
-                    'from-blue-500 to-cyan-500',
-                    'from-purple-500 to-pink-500',
-                    'from-green-500 to-emerald-500',
-                    'from-amber-500 to-orange-500'
-                  ];
-                  const color = colors[i % colors.length];
-                  return (
-                    <div key={item.week_range} className="flex items-center gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/5">
-                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center flex-shrink-0 text-white text-xs font-bold`}>
-                        W{i + 1}
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-white">{item.topic}</p>
-                        <p className="text-[10px] text-gray-400">{item.week_range} • {item.skills_covered.join(', ')}</p>
-                        <p className="text-xs text-gray-500 mt-1">{item.goal}</p>
-                        <div className="w-full h-1.5 rounded-full bg-white/5 mt-2">
-                          <div className={`h-full rounded-full bg-gradient-to-r ${color}`} style={{ width: `${item.progress || 0}%` }} />
-                        </div>
-                      </div>
-                      <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                        item.status === 'In Progress' ? 'bg-blue-500/10 text-blue-400' : 'bg-gray-500/10 text-gray-400'
-                      }`}>{item.status}</span>
+      {/* Learning Plan Timeline */}
+      {learningPlan.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+          className="glass-card p-6">
+          <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2">
+            <Calendar size={16} className="text-purple-400" /> Personalized Learning Roadmap
+          </h3>
+          <div className="space-y-3">
+            {learningPlan.map((week, i) => {
+              const isGap = week.type === 'gap' || !week.type;
+              return (
+                <motion.div key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.05 * i }}
+                  className="flex gap-4 group">
+                  {/* Timeline dot */}
+                  <div className="flex flex-col items-center">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      week.status === 'Completed' ? 'bg-green-500/20 text-green-400' :
+                      week.status === 'In Progress' ? 'bg-blue-500/20 text-blue-400' :
+                      'bg-white/5 text-gray-500'
+                    }`}>
+                      {week.status === 'Completed' ? <CheckCircle2 size={14} /> :
+                       week.status === 'In Progress' ? <Play size={14} /> :
+                       <span className="text-xs font-bold">{i + 1}</span>}
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </motion.div>
-      )}
-
-      {/* Courses Tab */}
-      {activeTab === 'Courses' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recommendedCourses.length === 0 ? (
-              <div className="col-span-full p-8 text-center text-gray-500">No courses recommended at this time.</div>
-            ) : (
-              recommendedCourses.map((course, i) => (
-                <motion.div key={course.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }} className="glass-card glass-card-hover p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-2xl">{
-                      course.provider.toLowerCase().includes('youtube') ? '📺' :
-                      course.provider.toLowerCase().includes('coursera') ? '🎓' :
-                      course.provider.toLowerCase().includes('udemy') ? '💻' : '📘'
-                    }</span>
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                      course.priority === 'Critical' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-                      course.priority === 'Moderate' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                      'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-                    }`}>{course.priority} Priority</span>
+                    {i < learningPlan.length - 1 && <div className="w-px h-full bg-white/5 mt-1" />}
                   </div>
-                  <h3 className="text-sm font-bold text-white mb-1 line-clamp-2" title={course.title}>{course.title}</h3>
-                  <p className="text-xs text-gray-400 mb-2">{course.provider} • {course.skill_name}</p>
-                  <p className="text-xs text-gray-500 mb-3 line-clamp-2 h-8">{course.description}</p>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs text-gray-400"><Clock size={12} /><span>{course.duration_hours}h</span></div>
-                    <div className="flex items-center gap-1 text-xs text-amber-400 font-medium"><Star size={12} /><span>+{Math.round(course.duration_hours * 10)} pts</span></div>
+                  {/* Content */}
+                  <div className={`flex-1 p-4 rounded-xl border transition-all ${
+                    week.status === 'In Progress' ? 'bg-blue-500/5 border-blue-500/20' :
+                    week.status === 'Completed' ? 'bg-green-500/5 border-green-500/20' :
+                    'bg-white/[0.02] border-white/5 group-hover:border-white/10'
+                  }`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/5 text-gray-400">{week.week_range}</span>
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${isGap ? 'bg-red-500/10 text-red-400' : 'bg-green-500/10 text-green-400'}`}>
+                        {isGap ? 'NEW SKILL' : 'LEVEL UP'}
+                      </span>
+                    </div>
+                    <p className="text-sm font-medium text-white">{week.topic}</p>
+                    <p className="text-xs text-gray-400 mt-1">{week.goal}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      {(week.skills_covered || []).map(sk => (
+                        <span key={sk} className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400">{sk}</span>
+                      ))}
+                    </div>
                   </div>
-                  <button onClick={() => window.open(course.url, '_blank')} className="w-full mt-4 glow-btn !py-2 text-xs flex items-center justify-center gap-2">
-                    <Play size={12} /> Start Learning
-                  </button>
                 </motion.div>
-              ))
-            )}
+              );
+            })}
           </div>
         </motion.div>
       )}
 
-      {/* Challenges Tab (Keeping Mock for now since AI doesn't generate challenges yet) */}
-      {activeTab === 'Challenges' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <div className="space-y-4">
-            {mockChallenges.map((challenge, i) => (
-              <motion.div key={challenge.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }} className="glass-card glass-card-hover p-5 flex items-center gap-5">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                  challenge.difficulty === 'Easy' ? 'bg-green-500/10 border border-green-500/20' :
-                  challenge.difficulty === 'Medium' ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-red-500/10 border border-red-500/20'
-                }`}>
-                  <Zap size={18} className={challenge.difficulty === 'Easy' ? 'text-green-400' : challenge.difficulty === 'Medium' ? 'text-amber-400' : 'text-red-400'} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-bold text-white mb-1">{challenge.title}</h3>
-                  <p className="text-xs text-gray-400 mb-2">{challenge.description}</p>
-                  <div className="flex items-center gap-3 text-xs text-gray-400">
-                    <span className={`px-2 py-0.5 rounded-full font-medium ${
-                      challenge.difficulty === 'Easy' ? 'bg-green-500/10 text-green-400' :
-                      challenge.difficulty === 'Medium' ? 'bg-amber-500/10 text-amber-400' : 'bg-red-500/10 text-red-400'
-                    }`}>{challenge.difficulty}</span>
-                    <span>{challenge.category}</span>
-                    <span>{challenge.participants} joined</span>
-                    <span>Deadline: {challenge.deadline}</span>
+      {/* Courses grouped by priority */}
+      {priorityOrder.map((priority) => {
+        const group = groupedCourses[priority] || [];
+        if (group.length === 0) return null;
+        const cfg = priorityConfig[priority];
+        const Icon = cfg.icon;
+
+        return (
+          <motion.div key={priority} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <div className="flex items-center gap-2 mb-3">
+              <Icon size={16} className={cfg.color} />
+              <h3 className="text-base font-bold text-white">{cfg.label}</h3>
+              <span className="text-xs text-gray-500 ml-1">({group.length} courses)</span>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {group.map((course, i) => (
+                <motion.a
+                  key={i}
+                  href={course.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.03 * i }}
+                  className={`glass-card p-4 hover:border-white/15 transition-all group/card cursor-pointer block`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`w-10 h-10 rounded-xl ${cfg.bg} border ${cfg.border} flex items-center justify-center flex-shrink-0`}>
+                      <BookOpen size={16} className={cfg.color} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-white mb-1 group-hover/card:text-blue-400 transition-colors line-clamp-2">{course.title}</p>
+                      <p className="text-xs text-gray-400 mb-2 line-clamp-2">{course.description}</p>
+                      <div className="flex items-center gap-3 text-[10px] text-gray-500 flex-wrap">
+                        <span className="flex items-center gap-1">
+                          <Target size={10} /> {course.skill_name}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock size={10} /> {course.duration_hours}h
+                        </span>
+                        <span className="px-1.5 py-0.5 rounded-full bg-white/5 text-gray-400">{course.provider}</span>
+                      </div>
+                    </div>
+                    <ExternalLink size={14} className="text-gray-600 group-hover/card:text-blue-400 transition-colors flex-shrink-0 mt-1" />
                   </div>
-                </div>
-                <div className="text-center flex-shrink-0">
-                  <div className="flex items-center gap-1 text-amber-400 font-bold text-sm mb-2"><Trophy size={14} />+{challenge.rewardPoints}</div>
-                  <button className="glow-btn !py-2 !px-4 text-xs">Join Challenge</button>
-                </div>
-              </motion.div>
-            ))}
+                </motion.a>
+              ))}
+            </div>
+          </motion.div>
+        );
+      })}
+
+      {/* Quick learning stats */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+        className="glass-card p-5">
+        <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+          <TrendingUp size={14} className="text-green-400" /> Learning Impact Estimate
+        </h3>
+        <div className="grid grid-cols-3 gap-4 text-center">
+          <div>
+            <p className="text-2xl font-bold text-white">{totalHours}h</p>
+            <p className="text-[10px] text-gray-500">Total Learning Time</p>
           </div>
-        </motion.div>
-      )}
+          <div>
+            <p className="text-2xl font-bold text-white">
+              +{courses.reduce((s, c) => {
+                const gap = (result?.skill_gaps || []).find(g => g.skill.toLowerCase() === (c.skill_name || '').toLowerCase());
+                return s + (gap?.matchBoost || 2);
+              }, 0)}%
+            </p>
+            <p className="text-[10px] text-gray-500">Potential Match Boost</p>
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-white">{new Set(courses.map(c => c.skill_name)).size}</p>
+            <p className="text-[10px] text-gray-500">Skills Covered</p>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }

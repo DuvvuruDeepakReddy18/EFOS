@@ -5,6 +5,8 @@ import { fetchInternships, applyForInternship, checkApplicationStatus } from '@/
 import type { Internship } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
+import { useResumeStore } from '@/store/resumeStore';
+import { calculateMatchScore } from '@/utils/matchScorer';
 
 export default function InternshipMatches() {
   const [internships, setInternships] = useState<Internship[]>([]);
@@ -16,7 +18,7 @@ export default function InternshipMatches() {
   const [activeFilter, setActiveFilter] = useState<string>('All Domains');
   
   const { user } = useAuthStore();
-
+  const { result } = useResumeStore();
   useEffect(() => {
     async function loadData() {
       try {
@@ -59,11 +61,6 @@ export default function InternshipMatches() {
     }
   };
 
-  // Helper function to deterministically "randomize" a match score based on the ID for demo purposes
-  const getMatchScore = (id: string) => {
-    const sum = id.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
-    return 70 + (sum % 28); // Returns value between 70 and 98
-  };
 
   return (
     <div className="space-y-6">
@@ -122,7 +119,7 @@ export default function InternshipMatches() {
             return true;
           })
           .map((intern, i) => {
-            const matchScore = getMatchScore(intern.id);
+            const matchScore = calculateMatchScore(intern, result);
             return (
               <motion.div
                 key={intern.id}

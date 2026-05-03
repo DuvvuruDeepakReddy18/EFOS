@@ -1,14 +1,38 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { FileText, Shield, Sparkles, Trophy, Target, ArrowUpRight, TrendingUp, Clock, Brain, Building2, UploadCloud } from 'lucide-react';
-import { mockInternships, mockRewards } from '@/data/mockData';
+import { mockRewards } from '@/data/mockData';
 import { useAuthStore } from '@/store/authStore';
 import { useResumeStore } from '@/store/resumeStore';
+import { fetchInternships } from '@/lib/supabase';
+import type { Internship } from '@/lib/supabase';
+import { calculateMatchScore } from '@/utils/matchScorer';
 
 export default function StudentDashboard() {
   const { user } = useAuthStore();
   const { isAnalyzed, result } = useResumeStore();
   const firstName = user?.name?.split(' ')[0] || 'Student';
+
+  const [topInternships, setTopInternships] = useState<(Internship & { matchScore: number })[]>([]);
+
+  useEffect(() => {
+    async function loadMatches() {
+      if (!isAnalyzed || !result) return;
+      try {
+        const data = await fetchInternships();
+        const scored = data.map(intern => ({
+          ...intern,
+          matchScore: calculateMatchScore(intern, result)
+        }));
+        scored.sort((a, b) => b.matchScore - a.matchScore);
+        setTopInternships(scored.slice(0, 3));
+      } catch (err) {
+        console.error('Failed to load internships for dashboard', err);
+      }
+    }
+    loadMatches();
+  }, [isAnalyzed, result]);
 
   if (!isAnalyzed || !result) {
     return (
@@ -46,11 +70,12 @@ export default function StudentDashboard() {
     );
   }
 
+  const dnaComplete = result.talent_dna && Object.values(result.talent_dna).some(v => v > 0);
   const quickStats = [
+    { label: 'Resume Score', value: `${result.resume_score || 0}%`, icon: FileText, color: 'from-cyan-500/20 to-cyan-500/5', textColor: 'text-cyan-400', border: 'border-cyan-500/30' },
     { label: 'AI Match Score', value: `${result.current_match_score || 0}%`, icon: Target, color: 'from-green-500/20 to-green-500/5', textColor: 'text-green-400', border: 'border-green-500/30' },
     { label: 'Verified Skills', value: result.skills?.length || 0, icon: Shield, color: 'from-blue-500/20 to-blue-500/5', textColor: 'text-blue-400', border: 'border-blue-500/30' },
-    { label: 'Skill Gaps', value: result.skill_gaps?.length || 0, icon: FileText, color: 'from-purple-500/20 to-purple-500/5', textColor: 'text-purple-400', border: 'border-purple-500/30' },
-    { label: 'Target Roles', value: result.target_roles?.length || 0, icon: Trophy, color: 'from-amber-500/20 to-amber-500/5', textColor: 'text-amber-400', border: 'border-amber-500/30' },
+    { label: 'Talent DNA', value: dnaComplete ? '✓ Done' : 'Take Test', icon: Brain, color: dnaComplete ? 'from-purple-500/20 to-purple-500/5' : 'from-amber-500/20 to-amber-500/5', textColor: dnaComplete ? 'text-purple-400' : 'text-amber-400', border: dnaComplete ? 'border-purple-500/30' : 'border-amber-500/30', to: '/student/talent-dna' },
   ];
 
   const topGap = result.skill_gaps?.[0];
@@ -73,26 +98,52 @@ export default function StudentDashboard() {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {quickStats.map((stat, i) => (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className={`glass-card p-6 border ${stat.border} hover:-translate-y-1 transition-transform cursor-pointer relative overflow-hidden group shadow-lg shadow-black/20`}
-          >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-[40px] -mr-16 -mt-16 group-hover:bg-white/10 transition-colors pointer-events-none" />
-            <div className="flex items-center justify-between mb-4 relative z-10">
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-inner`}>
-                <stat.icon size={22} className={stat.textColor} />
+        {quickStats.map((stat, i) => {
+          const inner = (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              className={`glass-card p-6 border ${stat.border} hover:-translate-y-1 transition-transform cursor-pointer relative overflow-hidden group shadow-lg shadow-black/20`}
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-[40px] -mr-16 -mt-16 group-hover:bg-white/10 transition-colors pointer-events-none" />
+              <div className="flex items-center justify-between mb-4 relative z-10">
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-inner`}>
+                  <stat.icon size={22} className={stat.textColor} />
+                </div>
+                <ArrowUpRight size={18} className="text-gray-500 group-hover:text-white transition-colors" />
               </div>
-              <ArrowUpRight size={18} className="text-gray-500 group-hover:text-white transition-colors" />
-            </div>
-            <p className={`text-3xl font-extrabold ${stat.textColor} relative z-10 font-mono tracking-tight`}>{stat.value}</p>
-            <p className="text-sm font-medium text-gray-400 mt-1 relative z-10">{stat.label}</p>
-          </motion.div>
-        ))}
+              <p className={`text-3xl font-extrabold ${stat.textColor} relative z-10 font-mono tracking-tight`}>{stat.value}</p>
+              <p className="text-sm font-medium text-gray-400 mt-1 relative z-10">{stat.label}</p>
+            </motion.div>
+          );
+          return (stat as any).to ? <Link key={stat.label} to={(stat as any).to}>{inner}</Link> : <div key={stat.label}>{inner}</div>;
+        })}
       </div>
+
+      {/* AI Improvement Tips */}
+      {result.improvement_tips && result.improvement_tips.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="glass-card p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles size={18} className="text-amber-400" />
+            <h2 className="text-base font-bold text-white">AI Improvement Tips</h2>
+            <span className="px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-[10px] font-bold text-amber-300 uppercase tracking-wider ml-1">Personalized</span>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {result.improvement_tips.map((tip, i) => (
+              <div key={i} className={`p-4 rounded-xl border ${tip.type === 'warning' ? 'bg-red-500/5 border-red-500/15' : 'bg-blue-500/5 border-blue-500/15'}`}>
+                <div className="flex items-start gap-2">
+                  <span className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${tip.type === 'warning' ? 'bg-red-500/20 text-red-400' : 'bg-blue-500/20 text-blue-400'}`}>
+                    {tip.type === 'warning' ? '!' : '✓'}
+                  </span>
+                  <p className="text-sm text-gray-300 leading-relaxed">{tip.text}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* AI Insight Panel */}
@@ -185,17 +236,17 @@ export default function StudentDashboard() {
             <Link to="/student/matches" className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-wider">View All</Link>
           </div>
           <div className="space-y-4 flex-grow">
-            {mockInternships.slice(0, 3).map((intern) => (
+            {topInternships.map((intern) => (
               <div key={intern.id} className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.08] hover:border-blue-500/20 transition-all cursor-pointer group shadow-lg shadow-black/20">
-                <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-2xl shadow-inner group-hover:scale-105 transition-transform">{intern.companyLogo}</div>
+                <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center font-bold text-xl text-blue-400 shadow-inner group-hover:scale-105 transition-transform">{intern.company_name.charAt(0).toUpperCase()}</div>
                 <div className="flex-1 min-w-0">
                   <p className="text-base font-bold text-white truncate group-hover:text-blue-400 transition-colors">{intern.title}</p>
-                  <p className="text-xs text-gray-400 mt-1 flex items-center gap-1.5"><Building2 size={12}/> {intern.companyName} <span className="text-gray-600">•</span> {intern.location}</p>
+                  <p className="text-xs text-gray-400 mt-1 flex items-center gap-1.5"><Building2 size={12}/> {intern.company_name} <span className="text-gray-600">•</span> {intern.location}</p>
                 </div>
                 <div className="text-right flex flex-col items-end">
                   <div className={`flex items-center justify-center w-11 h-11 rounded-xl ${
-                    (intern.matchScore ?? 0) >= 90 ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
-                    (intern.matchScore ?? 0) >= 75 ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                    intern.matchScore >= 90 ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
+                    intern.matchScore >= 75 ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
                   }`}>
                     <span className="text-sm font-bold">{intern.matchScore}%</span>
                   </div>
