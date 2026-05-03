@@ -7,7 +7,7 @@
 
 Build **InternMatch AI** — a national-scale, AI-powered internship allocation platform for India's PM Internship Scheme. The platform intelligently matches students to internships using NLP, machine learning, optimization algorithms, and gamification. It serves three user types: Students, Companies, and Government/Admin.
 
-**Hackathon Context:** SMARTATHON 2.0 | Domain: Intelligent Data Centre Optimization | Team: Black Squad
+**Hackathon Context:** EFOS Hackathon | Domain: Open Innovation | Team: Black Squad
 
 ---
 
@@ -742,4 +742,4 @@ services:
 
 ---
 
-*Built for SMARTATHON 2.0 | Black Squad | Domain: Intelligent Data Centre Optimization*
+*Built for EFOS Hackathon | Black Squad | Domain: Open Innovation*

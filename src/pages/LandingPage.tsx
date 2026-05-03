@@ -268,7 +268,7 @@ export default function LandingPage() {
             <span className="text-sm font-bold text-white">InternMatch AI</span>
           </div>
           <p className="text-xs text-gray-500">
-            SMARTATHON 2.0 | Black Squad | AI-Based Smart Allocation Engine for PM Internship Scheme
+            EFOS Hackathon | Black Squad | AI-Based Smart Allocation Engine for PM Internship Scheme
           </p>
           <div className="flex items-center gap-6">
             <span className="text-xs text-gray-500 hover:text-gray-300 cursor-pointer">Privacy</span>

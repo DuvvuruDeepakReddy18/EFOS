@@ -144,7 +144,7 @@ export default function Login() {
         </div>
 
         <p className="text-xs text-center text-gray-500 mt-6">
-          SMARTATHON 2.0 • Black Squad • PM Internship Scheme
+          EFOS Hackathon • Black Squad • PM Internship Scheme
         </p>
       </motion.div>
     </div>

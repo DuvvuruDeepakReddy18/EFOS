@@ -10,9 +10,9 @@
 | Field | Value |
 |-------|-------|
 | **Project Name** | InternMatch AI |
-| **Hackathon** | SMARTATHON 2.0 |
+| **Hackathon** | EFOS Hackathon |
 | **Problem Statement** | AI-Based Smart Allocation Engine for PM Internship Scheme |
-| **Domain** | Intelligent Data Centre Optimization |
+| **Domain** | Open Innovation |
 | **Team** | Black Squad |
 | **Objective** | National-scale AI platform to match students with PM Scheme internships using NLP, optimization algorithms, and gamification |
 
@@ -510,4 +510,4 @@ The following flow must work end-to-end for the demo:
 
 ---
 
-*SMARTATHON 2.0 | Black Squad | InternMatch AI | AI-Based Smart Allocation Engine for PM Internship Scheme*
+*EFOS Hackathon | Black Squad | InternMatch AI | AI-Based Smart Allocation Engine for PM Internship Scheme*
