@@ -1,14 +1,28 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Map, ArrowRight, TrendingUp, AlertTriangle, Sparkles, CheckCircle2, Target, Upload, BookOpen, ChevronDown } from 'lucide-react';
 import { useResumeStore } from '@/store/resumeStore';
 import { useNavigate, Link } from 'react-router-dom';
 
+// Simple string hash for deterministic changes
+const hashString = (str: string) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+};
+
 export default function CareerPathway() {
-  const { isAnalyzed, result } = useResumeStore();
+  const { isAnalyzed, result, selectedRole: storeSelectedRole, setSelectedRole } = useResumeStore();
   const navigate = useNavigate();
   
-  const [selectedRole, setSelectedRole] = useState(result?.target_roles?.[0] || 'Software Engineer');
+  const defaultRoles = ['Software Engineer', 'Data Scientist', 'Product Manager', 'UX Designer', 'Cloud Architect'];
+  const availableRoles = result?.target_roles?.length ? Array.from(new Set([...result.target_roles, ...defaultRoles])).slice(0, 5) : defaultRoles;
+
+  const selectedRole = storeSelectedRole || availableRoles[0];
 
   if (!isAnalyzed || !result) {
     return (
@@ -37,49 +51,80 @@ export default function CareerPathway() {
     );
   }
 
-  const availableRoles = result.target_roles?.length ? result.target_roles : ['Software Engineer'];
-  const predictedScore = result.potential_match_score || 92;
-  const currentScore = result.current_match_score || 40;
+  // Generate dynamic career path based on user's gaps, skills, AND selected role
+  const dynamicCareerPath = useMemo(() => {
+    const hash = hashString(selectedRole);
+    
+    // Vary the base score slightly based on role compatibility (simulated)
+    const baseCurrentScore = result.current_match_score || 40;
+    const currentScore = Math.max(20, Math.min(85, baseCurrentScore - (hash % 15)));
+    const predictedScore = Math.min(98, currentScore + 30 + (hash % 15));
+    
+    const scoreDiff = Math.max(0, predictedScore - currentScore);
+    const phase1Score = Math.floor(currentScore + scoreDiff * 0.25);
+    const phase2Score = Math.floor(currentScore + scoreDiff * 0.50);
+    const phase3Score = Math.floor(currentScore + scoreDiff * 0.75);
 
-  // Calculate monotonic score progression
-  const scoreDiff = Math.max(0, predictedScore - currentScore);
-  const phase1Score = Math.floor(currentScore + scoreDiff * 0.25);
-  const phase2Score = Math.floor(currentScore + scoreDiff * 0.50);
-  const phase3Score = Math.floor(currentScore + scoreDiff * 0.75);
+    const gaps = result.skill_gaps || [];
+    const recommended = result.recommended_courses || [];
+    const mySkills = result.skills || [];
 
-  // Generate dynamic career path based on user's gaps and skills
-  const dynamicCareerPath = [
-    { 
-      semester: 'Phase 1: Skill Up', 
-      role: 'Skill Building & Mini Projects', 
-      level: 'Entry', 
-      skills: (result.skill_gaps || []).slice(0, 3).map(g => g.skill), 
-      predictedScore: phase1Score,
-      action: { label: 'Go to Learning Hub', link: '/student/learning-hub' }
-    },
-    { 
-      semester: 'Phase 2: Foundation', 
-      role: 'Foundational Internship', 
-      level: 'Entry', 
-      skills: (result.recommended_courses || []).slice(0, 3).map(c => c.skill_name), 
-      predictedScore: phase2Score,
-      action: { label: 'View Courses', link: '/student/learning-hub' }
-    },
-    { 
-      semester: 'Phase 3: Specialization', 
-      role: `Junior ${selectedRole}`, 
-      level: 'Mid', 
-      skills: [...(result.skills || []).slice(0, 2).map(s => s.name), 'Problem Solving'], 
-      predictedScore: phase3Score 
-    },
-    { 
-      semester: 'Phase 4: Target', 
-      role: selectedRole, 
-      level: 'Advanced', 
-      skills: (result.skills || []).slice(0, 3).map(s => s.name), 
-      predictedScore: predictedScore 
-    },
-  ];
+    // Shuffle arrays deterministically based on role
+    const shuffle = (arr: any[]) => {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = (hash + i) % (i + 1);
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    };
+
+    const roleGaps = shuffle(gaps).slice(0, 3).map(g => g.skill);
+    const roleCourses = shuffle(recommended).slice(0, 3).map(c => c.skill_name);
+    const roleSkills = shuffle(mySkills).slice(0, 3).map(s => s.name);
+
+    // Fallbacks if arrays are empty
+    const phase1Skills = roleGaps.length ? roleGaps : ['Core Fundamentals', 'Domain Knowledge'];
+    const phase2Skills = roleCourses.length ? roleCourses : ['Advanced Concepts', 'Practical Application'];
+    const phase3Skills = roleSkills.length ? [...roleSkills.slice(0, 2), 'Team Collaboration'] : ['Project Management', 'Communication'];
+
+    return {
+      predictedScore,
+      currentScore,
+      steps: [
+        { 
+          semester: 'Phase 1: Skill Up', 
+          role: `Foundational ${selectedRole} Skills`, 
+          level: 'Entry', 
+          skills: phase1Skills, 
+          predictedScore: phase1Score,
+          action: { label: 'Go to Learning Hub', link: '/student/learning-hub' }
+        },
+        { 
+          semester: 'Phase 2: Application', 
+          role: `Internship: ${selectedRole.split(' ')[0]} Focus`, 
+          level: 'Entry', 
+          skills: phase2Skills, 
+          predictedScore: phase2Score,
+          action: { label: 'View Courses', link: '/student/learning-hub' }
+        },
+        { 
+          semester: 'Phase 3: Specialization', 
+          role: `Junior ${selectedRole}`, 
+          level: 'Mid', 
+          skills: phase3Skills, 
+          predictedScore: phase3Score 
+        },
+        { 
+          semester: 'Phase 4: Target', 
+          role: selectedRole, 
+          level: 'Advanced', 
+          skills: [selectedRole, 'System Architecture', 'Leadership'], 
+          predictedScore: predictedScore 
+        },
+      ]
+    };
+  }, [selectedRole, result]);
 
   return (
     <div className="space-y-6">
@@ -114,11 +159,15 @@ export default function CareerPathway() {
             </div>
             <p className="text-sm text-gray-400 mt-2">4-phase roadmap to reach your dream role</p>
           </div>
-          <div className="ml-auto text-center pl-6 border-l border-white/10">
-            <Target size={20} className="text-purple-400 mx-auto mb-1" />
-            <p className="text-xs text-gray-400">Predicted Score</p>
-            <p className="text-2xl font-bold text-green-400">{predictedScore}<span className="text-sm text-gray-400">/100</span></p>
-            <p className="text-[10px] text-gray-500">After completing pathway</p>
+          <div className="ml-auto text-center pl-6 border-l border-white/10 flex flex-col gap-2">
+            <div>
+              <p className="text-[10px] text-gray-500 mb-0.5">Current Score</p>
+              <p className="text-lg font-bold text-blue-400">{dynamicCareerPath.currentScore}<span className="text-xs text-gray-500">/100</span></p>
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-500 mb-0.5">Predicted Score</p>
+              <p className="text-xl font-bold text-green-400">{dynamicCareerPath.predictedScore}<span className="text-xs text-gray-500">/100</span></p>
+            </div>
           </div>
         </div>
       </motion.div>
@@ -131,9 +180,9 @@ export default function CareerPathway() {
           <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-500 via-purple-500 to-green-500 opacity-30" />
 
           <div className="space-y-6">
-            {dynamicCareerPath.map((step, i) => (
+            {dynamicCareerPath.steps.map((step, i) => (
               <motion.div
-                key={step.semester}
+                key={`${selectedRole}-${i}`}
                 initial={{ opacity: 0, x: -30 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 * i }}
@@ -195,7 +244,7 @@ export default function CareerPathway() {
           </div>
           <p className="text-sm text-gray-300 mb-4">
             In <span className="text-blue-400 font-medium">2 years</span>, with this pathway, your skill score will be
-            <span className="text-green-400 font-bold"> {predictedScore}/100</span> — placing you in the <span className="text-amber-400 font-medium">top 5%</span> nationally.
+            <span className="text-green-400 font-bold"> {dynamicCareerPath.predictedScore}/100</span> — placing you in the <span className="text-amber-400 font-medium">top 5%</span> nationally for {selectedRole}.
           </p>
           <div className="flex items-center gap-3">
             <CheckCircle2 size={14} className="text-green-400" />
@@ -211,7 +260,7 @@ export default function CareerPathway() {
           <div className="space-y-3">
             <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-500/[0.05] border border-amber-500/10">
               <TrendingUp size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-gray-300">Based on your gaps, consider focusing heavily on <span className="text-blue-400 font-medium">{result.skill_gaps?.[0]?.skill || 'core fundamentals'}</span> to avoid bottlenecks.</p>
+              <p className="text-xs text-gray-300">Based on your gaps, consider focusing heavily on <span className="text-blue-400 font-medium">{dynamicCareerPath.steps[0].skills[0] || 'core fundamentals'}</span> to avoid bottlenecks in {selectedRole}.</p>
             </div>
             <div className="flex items-start gap-2 p-3 rounded-lg bg-green-500/[0.05] border border-green-500/10">
               <Sparkles size={14} className="text-green-400 flex-shrink-0 mt-0.5" />
@@ -223,3 +272,4 @@ export default function CareerPathway() {
     </div>
   );
 }
+

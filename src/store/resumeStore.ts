@@ -114,6 +114,10 @@ interface ResumeState {
   /** Update talent DNA from assessment test */
   setTalentDNA: (dna: TalentDNA) => void;
 
+  /** Persistent selected career goal/role */
+  selectedRole: string | null;
+  setSelectedRole: (role: string) => void;
+
   /* ─── Derived getters ─── */
 
   /** Skills formatted for Skill Passport display */
@@ -162,6 +166,9 @@ export const useResumeStore = create<ResumeState>()(
     (set, get) => ({
   isAnalyzed: false,
   result: null,
+  selectedRole: null,
+
+  setSelectedRole: (role) => set({ selectedRole: role }),
 
   setAnalysis: (data) => {
     // Hydrate client-side fields with defensive defaults
@@ -190,6 +197,7 @@ export const useResumeStore = create<ResumeState>()(
 
     set({
       isAnalyzed: true,
+      selectedRole: data.target_roles?.[0] || 'Software Engineer',
       result: {
         ...data,
         // Defensive defaults for all fields the API might omit
@@ -214,7 +222,7 @@ export const useResumeStore = create<ResumeState>()(
     });
   },
 
-  clearAnalysis: () => set({ isAnalyzed: false, result: null }),
+  clearAnalysis: () => set({ isAnalyzed: false, result: null, selectedRole: null }),
 
   /** Update talent DNA from assessment test */
   setTalentDNA: (dna: TalentDNA) => {

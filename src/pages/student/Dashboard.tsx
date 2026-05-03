@@ -11,7 +11,7 @@ import { calculateMatchScore } from '@/utils/matchScorer';
 
 export default function StudentDashboard() {
   const { user } = useAuthStore();
-  const { isAnalyzed, result } = useResumeStore();
+  const { isAnalyzed, result, selectedRole } = useResumeStore();
   const firstName = user?.name?.split(' ')[0] || 'Student';
 
   const [topInternships, setTopInternships] = useState<(Internship & { matchScore: number })[]>([]);
@@ -23,7 +23,7 @@ export default function StudentDashboard() {
         const data = await fetchInternships();
         const scored = data.map(intern => ({
           ...intern,
-          matchScore: calculateMatchScore(intern, result)
+          matchScore: calculateMatchScore(intern, result, selectedRole)
         }));
         scored.sort((a, b) => b.matchScore - a.matchScore);
         setTopInternships(scored.slice(0, 3));
@@ -32,7 +32,7 @@ export default function StudentDashboard() {
       }
     }
     loadMatches();
-  }, [isAnalyzed, result]);
+  }, [isAnalyzed, result, selectedRole]);
 
   if (!isAnalyzed || !result) {
     return (

@@ -665,7 +665,7 @@ function synthesizeDerivedFields(result) {
   for (const s of skills) { cats[s.category] = (cats[s.category] || 0) + 1; }
 
   // ── Dynamic resume_score ──────────────────────────────────────────────
-  if (!result.resume_score || result.resume_score === 85) {
+  if (!result.resume_score) {
     let score = 30; // base
     if (skills.length >= 5) score += 15; else if (skills.length >= 2) score += 8;
     if (projects.length >= 2) score += 12; else if (projects.length >= 1) score += 6;
@@ -737,7 +737,7 @@ function synthesizeDerivedFields(result) {
 
   // ── Match scores ────────────────────────────────────────────────────
   if (!result.current_match_score || result.current_match_score === 0) {
-    result.current_match_score = Math.max(25, Math.min(85, result.resume_score - 10 + Math.floor(Math.random() * 5)));
+    result.current_match_score = Math.max(25, Math.min(98, result.resume_score - 10 + Math.floor(Math.random() * 5)));
   }
   if (!result.potential_match_score || result.potential_match_score <= result.current_match_score) {
     result.potential_match_score = Math.min(98, result.current_match_score + 15 + Math.floor(Math.random() * 10));

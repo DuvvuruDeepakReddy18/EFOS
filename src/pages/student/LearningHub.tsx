@@ -11,7 +11,7 @@ const priorityConfig: Record<string, { color: string; bg: string; border: string
 };
 
 export default function LearningHub() {
-  const { isAnalyzed, result, getRecommendedCourses } = useResumeStore();
+  const { isAnalyzed, result, getRecommendedCourses, selectedRole } = useResumeStore();
   const navigate = useNavigate();
   const courses = getRecommendedCourses();
   const learningPlan = result?.learning_plan || [];
@@ -63,7 +63,10 @@ export default function LearningHub() {
           <BookOpen size={24} className="text-green-400" />
           <h1 className="text-2xl font-bold text-white">Learning Hub</h1>
         </div>
-        <p className="text-sm text-gray-400">Curated courses and a personalized learning roadmap</p>
+        <p className="text-sm text-gray-400">
+          Curated courses and a personalized learning roadmap
+          {selectedRole && <> for <span className="text-green-400 font-medium">{selectedRole}</span></>}
+        </p>
       </motion.div>
 
       {/* Stats */}

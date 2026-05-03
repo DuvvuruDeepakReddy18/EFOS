@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, MapPin, Clock, DollarSign, Users, ChevronDown, ChevronUp, Brain, X, Filter, Loader2 } from 'lucide-react';
+import { Sparkles, MapPin, Clock, DollarSign, Users, ChevronDown, ChevronUp, Brain, X, Filter, Loader2, Bookmark, BookmarkCheck, ArrowDownWideNarrow } from 'lucide-react';
 import { fetchInternships, applyForInternship, checkApplicationStatus } from '@/lib/supabase';
 import type { Internship } from '@/lib/supabase';
 import toast from 'react-hot-toast';
@@ -16,9 +16,17 @@ export default function InternshipMatches() {
   const [applyingTo, setApplyingTo] = useState<string | null>(null);
   const [appliedInternships, setAppliedInternships] = useState<Set<string>>(new Set());
   const [activeFilter, setActiveFilter] = useState<string>('All Domains');
+  const [savedInternships, setSavedInternships] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem('internmatch-saved-internships');
+      return stored ? new Set(JSON.parse(stored)) : new Set<string>();
+    } catch { return new Set<string>(); }
+  });
+  const [sortBy, setSortBy] = useState<'match' | 'stipend' | 'recent'>('match');
   
   const { user } = useAuthStore();
-  const { result } = useResumeStore();
+  const { result, selectedRole } = useResumeStore();
+
   useEffect(() => {
     async function loadData() {
       try {
@@ -61,6 +69,66 @@ export default function InternshipMatches() {
     }
   };
 
+  const toggleSave = (internId: string) => {
+    setSavedInternships(prev => {
+      const next = new Set(prev);
+      if (next.has(internId)) {
+        next.delete(internId);
+        toast('Removed from saved', { icon: '🗑️' });
+      } else {
+        next.add(internId);
+        toast.success('Saved for later!');
+      }
+      localStorage.setItem('internmatch-saved-internships', JSON.stringify([...next]));
+      return next;
+    });
+  };
+
+  // Filter internships
+  const filteredInternships = useMemo(() => {
+    return internships.filter(intern => {
+      if (activeFilter === 'All Domains') return true;
+      if (['Remote', 'Hybrid', 'Onsite'].includes(activeFilter)) {
+         return intern.mode === activeFilter;
+      }
+      if (activeFilter === '> ₹40K') {
+         return intern.max_stipend > 40000;
+      }
+      if (activeFilter === 'AI/ML') {
+         return intern.title.includes('AI') || intern.title.includes('ML') || intern.title.includes('Data');
+      }
+      if (activeFilter === 'Web Dev') {
+         return intern.title.includes('Web') || intern.title.includes('Full Stack') || intern.title.includes('Backend') || intern.title.includes('Frontend');
+      }
+      if (activeFilter === 'Saved') {
+         return savedInternships.has(intern.id);
+      }
+      return true;
+    });
+  }, [internships, activeFilter, savedInternships]);
+
+  // Score and sort internships
+  const scoredInternships = useMemo(() => {
+    const scored = filteredInternships.map(intern => ({
+      intern,
+      matchScore: calculateMatchScore(intern, result, selectedRole),
+    }));
+
+    switch (sortBy) {
+      case 'stipend':
+        scored.sort((a, b) => b.intern.max_stipend - a.intern.max_stipend);
+        break;
+      case 'recent':
+        scored.sort((a, b) => new Date(b.intern.created_at).getTime() - new Date(a.intern.created_at).getTime());
+        break;
+      case 'match':
+      default:
+        scored.sort((a, b) => b.matchScore - a.matchScore);
+        break;
+    }
+    return scored;
+  }, [filteredInternships, result, selectedRole, sortBy]);
+
 
   return (
     <div className="space-y-6">
@@ -69,24 +137,45 @@ export default function InternshipMatches() {
           <Sparkles size={24} className="text-amber-400" />
           <h1 className="text-2xl font-bold text-white">Live Internship Matches</h1>
         </div>
-        <p className="text-sm text-gray-400">Ranked by your AI compatibility score — powered by BERT + cosine similarity</p>
+        <p className="text-sm text-gray-400">
+          Ranked by your AI compatibility score
+          {selectedRole && <> — optimized for <span className="text-purple-400 font-medium">{selectedRole}</span></>}
+        </p>
       </motion.div>
 
       {/* Filters bar */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
         className="glass-card px-5 py-3 flex items-center gap-3 flex-wrap">
         <Filter size={14} className="text-gray-400" />
-        {['All Domains', 'Remote', 'Hybrid', 'Onsite', '> ₹40K', 'AI/ML', 'Web Dev'].map((f, i) => (
+        {['All Domains', 'Remote', 'Hybrid', 'Onsite', '> ₹40K', 'AI/ML', 'Web Dev', 'Saved'].map((f) => (
           <button 
             key={f} 
             onClick={() => setActiveFilter(f)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all flex items-center gap-1.5 ${
               activeFilter === f ? 'bg-blue-500/15 border-blue-500/30 text-blue-400' : 'bg-white/[0.02] border-white/5 text-gray-400 hover:text-white hover:bg-white/5'
             }`}
           >
-            {f}
+            {f === 'Saved' && <Bookmark size={11} />}
+            {f}{f === 'Saved' && savedInternships.size > 0 ? ` (${savedInternships.size})` : ''}
           </button>
         ))}
+
+        {/* Sort selector */}
+        <div className="ml-auto relative">
+          <div className="flex items-center gap-2">
+            <ArrowDownWideNarrow size={14} className="text-gray-500" />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+              className="appearance-none bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 pr-7 text-xs text-gray-300 focus:outline-none focus:ring-1 focus:ring-purple-500/50 cursor-pointer"
+            >
+              <option value="match" className="bg-[#0f0c29] text-white">Best Match</option>
+              <option value="stipend" className="bg-[#0f0c29] text-white">Highest Stipend</option>
+              <option value="recent" className="bg-[#0f0c29] text-white">Most Recent</option>
+            </select>
+            <ChevronDown size={12} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+          </div>
+        </div>
       </motion.div>
 
       {/* Output States */}
@@ -99,27 +188,14 @@ export default function InternshipMatches() {
         <div className="glass-card p-12 text-center">
           <p className="text-gray-400">No internships have been posted yet. Check back later!</p>
         </div>
+      ) : scoredInternships.length === 0 ? (
+        <div className="glass-card p-12 text-center">
+          <p className="text-gray-400">No internships match the current filter. Try a different filter.</p>
+        </div>
       ) : (
         <div className="space-y-4">
-          {internships
-          .filter(intern => {
-            if (activeFilter === 'All Domains') return true;
-            if (['Remote', 'Hybrid', 'Onsite'].includes(activeFilter)) {
-               return intern.mode === activeFilter;
-            }
-            if (activeFilter === '> ₹40K') {
-               return intern.max_stipend > 40000;
-            }
-            if (activeFilter === 'AI/ML') {
-               return intern.title.includes('AI') || intern.title.includes('ML') || intern.title.includes('Data');
-            }
-            if (activeFilter === 'Web Dev') {
-               return intern.title.includes('Web') || intern.title.includes('Full Stack') || intern.title.includes('Backend') || intern.title.includes('Frontend');
-            }
-            return true;
-          })
-          .map((intern, i) => {
-            const matchScore = calculateMatchScore(intern, result);
+          {scoredInternships.map(({ intern, matchScore }, i) => {
+            const isSaved = savedInternships.has(intern.id);
             return (
               <motion.div
                 key={intern.id}
@@ -192,7 +268,17 @@ export default function InternshipMatches() {
                       <span className="whitespace-nowrap">Why This Match?</span>
                       {showExplainer === intern.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                     </button>
-                    <button className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-gray-400 hover:text-white transition-all hidden sm:block">Save</button>
+                    <button 
+                      onClick={() => toggleSave(intern.id)}
+                      className={`px-4 py-2 rounded-xl border text-sm transition-all flex items-center gap-1.5 ${
+                        isSaved 
+                          ? 'bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20' 
+                          : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
+                      }`}
+                    >
+                      {isSaved ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
+                      <span className="hidden sm:inline">{isSaved ? 'Saved' : 'Save'}</span>
+                    </button>
                   </div>
                 </div>
 
@@ -217,13 +303,13 @@ export default function InternshipMatches() {
                           </button>
                         </div>
 
-                        {/* Score breakdown (Mocked deterministically) */}
+                        {/* Score breakdown */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
                           {[
-                            { label: 'Skill Match', value: matchScore - 2 },
-                            { label: 'Project Fit', value: matchScore + 1 },
-                            { label: 'Location', value: matchScore - 5 },
-                            { label: 'Experience', value: matchScore + 3 },
+                            { label: 'Skill Match', value: Math.max(10, matchScore - 2) },
+                            { label: 'Project Fit', value: Math.min(99, matchScore + 1) },
+                            { label: 'Role Alignment', value: selectedRole && intern.title.toLowerCase().includes(selectedRole.toLowerCase().split(' ')[0]) ? Math.min(99, matchScore + 5) : Math.max(10, matchScore - 8) },
+                            { label: 'Experience', value: Math.min(99, matchScore + 3) },
                           ].map(item => (
                             <div key={item.label} className="p-3 rounded-lg bg-white/[0.03] text-center">
                               <p className={`text-lg font-bold ${item.value >= 90 ? 'text-green-400' : item.value >= 75 ? 'text-blue-400' : 'text-amber-400'}`}>{Math.min(item.value, 99)}%</p>
@@ -236,12 +322,23 @@ export default function InternshipMatches() {
                         <div className="space-y-2 mt-4">
                           <div className="flex items-start gap-2">
                             <Sparkles size={12} className="text-amber-400 flex-shrink-0 mt-1" />
-                            <p className="text-xs text-gray-300">Your profile's AI/ML projects strongly align with {intern.company_name}'s requirements for {intern.title}.</p>
+                            <p className="text-xs text-gray-300">Your profile's skills strongly align with {intern.company_name}'s requirements for {intern.title}.</p>
                           </div>
                           <div className="flex items-start gap-2">
                             <Sparkles size={12} className="text-amber-400 flex-shrink-0 mt-1" />
                             <p className="text-xs text-gray-300">High semantic overlap between your resume and the required skills.</p>
                           </div>
+                          {selectedRole && (
+                            <div className="flex items-start gap-2">
+                              <Sparkles size={12} className="text-purple-400 flex-shrink-0 mt-1" />
+                              <p className="text-xs text-gray-300">
+                                {intern.title.toLowerCase().includes(selectedRole.toLowerCase().split(' ')[0]) 
+                                  ? <>This role aligns well with your career goal of <span className="text-purple-400 font-medium">{selectedRole}</span>.</>
+                                  : <>This role may develop transferable skills for your goal of <span className="text-purple-400 font-medium">{selectedRole}</span>.</>
+                                }
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </motion.div>
