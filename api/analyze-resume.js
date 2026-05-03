@@ -361,19 +361,89 @@ async function callNvidiaAPI(resumeText, config) {
 
 /* ── File parsing utilities ── */
 
+/**
+ * Fallback: Extract readable text directly from PDF binary.
+ * PDF files store text in stream objects — this regex-based approach
+ * extracts text from common PDF text operators (Tj, TJ, ').
+ * Not perfect, but works as a last resort when proper parsers fail.
+ */
+function extractTextFromPdfBuffer(buffer) {
+  const raw = buffer.toString("latin1");
+  const textChunks = [];
+
+  // Extract text between BT...ET blocks (PDF text objects)
+  const btBlocks = raw.match(/BT[\s\S]*?ET/g) || [];
+  for (const block of btBlocks) {
+    // Match Tj operator (simple text strings)
+    const tjMatches = block.match(/\(([^)]*)\)\s*Tj/g) || [];
+    for (const m of tjMatches) {
+      const inner = m.match(/\(([^)]*)\)/);
+      if (inner) textChunks.push(inner[1]);
+    }
+
+    // Match TJ operator (text arrays)
+    const tjArrayMatches = block.match(/\[([^\]]*)\]\s*TJ/gi) || [];
+    for (const m of tjArrayMatches) {
+      const inner = m.match(/\(([^)]*)\)/g) || [];
+      for (const s of inner) {
+        const txt = s.match(/\(([^)]*)\)/);
+        if (txt) textChunks.push(txt[1]);
+      }
+    }
+
+    // Match ' operator (move to next line and show text)
+    const quoteMatches = block.match(/\(([^)]*)\)\s*'/g) || [];
+    for (const m of quoteMatches) {
+      const inner = m.match(/\(([^)]*)\)/);
+      if (inner) textChunks.push(inner[1]);
+    }
+  }
+
+  // Unescape common PDF string escapes
+  let text = textChunks.join(" ")
+    .replace(/\\n/g, "\n")
+    .replace(/\\r/g, "\r")
+    .replace(/\\t/g, "\t")
+    .replace(/\\\(/g, "(")
+    .replace(/\\\)/g, ")")
+    .replace(/\\\\/g, "\\");
+
+  // Clean up whitespace
+  text = text.replace(/\s+/g, " ").trim();
+  return text;
+}
+
 async function extractTextFromBase64(base64Data, fileType) {
   const buffer = Buffer.from(base64Data, "base64");
+  console.log(`[resume-api] Parsing ${fileType} file, buffer size: ${buffer.length} bytes`);
 
   if (fileType === "pdf") {
-    // Use unpdf — a pure-JS PDF parser optimized for serverless runtimes
-    // No native canvas dependencies required
-    const pdf = await getDocumentProxy(new Uint8Array(buffer));
-    const { text } = await extractText(pdf, { mergePages: true });
-    return text;
+    // Strategy 1: Try unpdf (pure-JS, serverless-optimized)
+    try {
+      const pdf = await getDocumentProxy(new Uint8Array(buffer));
+      const { text } = await extractText(pdf, { mergePages: true });
+      console.log(`[resume-api] unpdf extracted ${text.length} chars`);
+      if (text && text.trim().length > 30) return text;
+      console.log("[resume-api] unpdf returned too little text, trying fallback...");
+    } catch (unpdfErr) {
+      console.error("[resume-api] unpdf failed:", unpdfErr.message);
+    }
+
+    // Strategy 2: Raw binary text extraction (works on most PDFs)
+    try {
+      const rawText = extractTextFromPdfBuffer(buffer);
+      console.log(`[resume-api] Raw PDF extraction got ${rawText.length} chars`);
+      if (rawText && rawText.trim().length > 30) return rawText;
+    } catch (rawErr) {
+      console.error("[resume-api] Raw PDF extraction failed:", rawErr.message);
+    }
+
+    throw new Error("Could not extract text from this PDF. The file may be image-based or encrypted. Please try pasting your resume text instead.");
   }
 
   if (fileType === "docx") {
     const result = await mammoth.extractRawText({ buffer });
+    console.log(`[resume-api] mammoth extracted ${result.value.length} chars from DOCX`);
     return result.value;
   }
 
@@ -387,7 +457,14 @@ async function extractTextFromBase64(base64Data, fileType) {
 /* ── Main handler ── */
 export const maxDuration = 60;
 
-
+// Allow larger request bodies for base64-encoded file uploads (PDF/DOCX)
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
+};
 export default async function handler(req, res) {
   // CORS headers — restrict to known origins
   const allowedOrigins = [process.env.FRONTEND_URL, "http://localhost:5173", "http://localhost:3000"].filter(Boolean);
@@ -408,21 +485,36 @@ export default async function handler(req, res) {
   try {
     let resumeText = "";
 
+    // Log what the server received for debugging
+    const bodyKeys = Object.keys(req.body || {});
+    console.log(`[resume-api] Received request. Body keys: [${bodyKeys.join(", ")}]`);
+    if (req.body.fileData) {
+      console.log(`[resume-api] fileData length: ${req.body.fileData.length} chars, fileType: ${req.body.fileType}`);
+    }
+    if (req.body.resumeText) {
+      console.log(`[resume-api] resumeText length: ${req.body.resumeText.length} chars`);
+    }
+
     // Support two modes: direct text OR base64 file
     if (req.body.fileData && req.body.fileType) {
       // Mode 1: File upload (base64-encoded)
       try {
         resumeText = await extractTextFromBase64(req.body.fileData, req.body.fileType);
       } catch (parseErr) {
-        console.error("File parsing error:", parseErr);
+        console.error("[resume-api] File parsing error:", parseErr.message, parseErr.stack);
         return res.status(400).json({
-          error: `Could not parse ${req.body.fileType.toUpperCase()} file. Please try pasting text manually.`,
+          error: `Could not parse ${req.body.fileType.toUpperCase()} file. ${parseErr.message || "Please try pasting text manually."}`,
           detail: parseErr.message,
         });
       }
     } else if (req.body.resumeText) {
       // Mode 2: Direct text paste
       resumeText = req.body.resumeText;
+    } else {
+      console.error("[resume-api] No fileData or resumeText in request body. Body keys:", bodyKeys);
+      return res.status(400).json({
+        error: "No resume content received. Please upload a file or paste text.",
+      });
     }
 
     if (!resumeText || resumeText.trim().length < 50) {
