@@ -11,11 +11,12 @@ import toast from 'react-hot-toast';
 
 
 import * as pdfjsLib from 'pdfjs-dist';
-import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.mjs?url';
-import * as mammoth from 'mammoth';
+// @ts-ignore — Vite's ?url suffix bundles the file and returns its URL at build time
+import pdfjsWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorkerUrl;
 
-// Configure pdfjs worker to use the local bundled version
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+// @ts-ignore — Use the browser-specific build to avoid Node.js fs/path imports
+import mammoth from 'mammoth/mammoth.browser.min.js';
 
 export default function ResumeUpload() {
   const { isAnalyzed, result: storedResult } = useResumeStore();
@@ -43,7 +44,16 @@ export default function ResumeUpload() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      const data = await res.json();
+      
+      let data;
+      try {
+        data = await res.json();
+      } catch (jsonErr) {
+        if (res.status === 413) throw new Error("File too large for the AI server. Please use the 'paste text' option.");
+        if (res.status === 504) throw new Error("AI Server timeout. Please try again or paste a shorter text.");
+        throw new Error(`Server returned error ${res.status}. Try pasting text instead.`);
+      }
+
       if (data.error) {
         toast.error(data.error);
         setStage('upload');
@@ -53,9 +63,9 @@ export default function ResumeUpload() {
       setAnalysis(data);
       setStage('complete');
       toast.success('Resume analyzed! Skill Passport & Learning Hub are now personalized.');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Analysis error:', err);
-      toast.error('Failed to analyze. Please try again.');
+      toast.error(err.message || 'Failed to analyze. Please try again.');
       setStage('upload');
     }
   }, [user, setAnalysis]);
@@ -94,7 +104,7 @@ export default function ResumeUpload() {
         // Safe Client-side PDF Parsing using pdfjs-dist
         try {
           const arrayBuffer = await file.arrayBuffer();
-          const pdf = await pdfjsLib.getDocument(new Uint8Array(arrayBuffer)).promise;
+          const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
           let text = '';
           for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i);
@@ -109,16 +119,10 @@ export default function ResumeUpload() {
           } else {
             throw new Error("Extracted text is too short. PDF may be image-based.");
           }
-        } catch (pdfErr) {
-          console.error("Client-side PDF parsing failed, falling back to server:", pdfErr);
-          // Fallback to server-side if client fails
-          const reader = new FileReader();
-          reader.onload = () => {
-            toast.dismiss(loadingToast);
-            const base64Data = (reader.result as string).split(',')[1];
-            callApi({ fileData: base64Data, fileType });
-          };
-          reader.readAsDataURL(file);
+        } catch (pdfErr: any) {
+          console.error("Client-side PDF parsing failed:", pdfErr);
+          toast.dismiss(loadingToast);
+          toast.error("Could not read this PDF. It may be image-based or encrypted. Please use 'paste text' instead.", { duration: 6000 });
         }
       } else if (fileType === 'docx') {
         // Safe Client-side DOCX Parsing using mammoth
@@ -133,16 +137,10 @@ export default function ResumeUpload() {
           } else {
             throw new Error("Extracted text is too short. DOCX may be image-based.");
           }
-        } catch (docxErr) {
-          console.error("Client-side DOCX parsing failed, falling back to server:", docxErr);
-          // Fallback to server-side
-          const reader = new FileReader();
-          reader.onload = () => {
-            toast.dismiss(loadingToast);
-            const base64Data = (reader.result as string).split(',')[1];
-            callApi({ fileData: base64Data, fileType });
-          };
-          reader.readAsDataURL(file);
+        } catch (docxErr: any) {
+          console.error("Client-side DOCX parsing failed:", docxErr);
+          toast.dismiss(loadingToast);
+          toast.error("Could not read this DOCX file. Please try pasting text instead.", { duration: 6000 });
         }
       } else {
         // Fallback catch-all
