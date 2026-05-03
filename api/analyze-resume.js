@@ -186,18 +186,21 @@ function findCourses(skillName) {
 const NVIDIA_KEYS = [
   {
     key: process.env.NVIDIA_API_KEY_1 || process.env.NVIDIA_API_KEY || "",
-    model: "meta/llama-3.1-8b-instruct",   // Fast & capable, avoids Vercel timeouts
-    maxTokens: 2048,
+    model: "meta/llama-3.1-8b-instruct",   // Fast & capable
+    maxTokens: 1500,
+    timeout: 20000,
   },
   {
     key: process.env.NVIDIA_API_KEY_2 || process.env.NVIDIA_API_KEY || "",
     model: "meta/llama-3.3-70b-instruct",   // Slower fallback
-    maxTokens: 2048,
+    maxTokens: 1500,
+    timeout: 20000,
   },
   {
     key: process.env.NVIDIA_API_KEY_1 || process.env.NVIDIA_API_KEY || "",
-    model: "minimaxai/minimax-m2.7",         // Slow but accurate fallback
-    maxTokens: 2048,
+    model: "nvidia/llama-3.1-nemotron-70b-instruct",  // NVIDIA optimized
+    maxTokens: 1500,
+    timeout: 15000,
   },
 ];
 
@@ -298,7 +301,7 @@ Rules:
 
 async function callNvidiaAPI(resumeText, config) {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 50000); // 50s timeout to allow large JSON generation without streaming
+  const timeout = setTimeout(() => controller.abort(), config.timeout || 20000);
 
   try {
     const response = await fetch(NVIDIA_URL, {
@@ -313,7 +316,7 @@ async function callNvidiaAPI(resumeText, config) {
           { role: "system", content: SYSTEM_PROMPT },
           {
             role: "user",
-            content: `Analyze this resume and return the JSON:\n\n---RESUME START---\n${resumeText.slice(0, 8000)}\n---RESUME END---`,
+            content: `Analyze this resume and return the JSON:\n\n---RESUME START---\n${resumeText.slice(0, 5000)}\n---RESUME END---`,
           },
         ],
         temperature: 0.15,
