@@ -104,7 +104,9 @@ export default function Candidates() {
     const link = document.createElement('a');
     link.href = url;
     link.download = `candidates_export_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
     URL.revokeObjectURL(url);
     toast.success('CSV exported successfully!');
   };
@@ -230,22 +232,12 @@ export default function Candidates() {
                       <span className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-green-500/15 border border-green-500/30 text-xs text-green-400 font-semibold">
                         <CheckCircle2 size={12} /> Shortlisted
                       </span>
-                      <button onClick={() => undoStatus(candidate.id)}
-                        className="px-2 py-2 rounded-lg bg-white/5 border border-white/10 text-[10px] text-gray-500 hover:text-white transition-all"
-                        title="Undo">
-                        ↩️
-                      </button>
                     </div>
                   ) : currentStatus === 'Rejected' ? (
                     <div className="flex items-center gap-2">
                       <span className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-500/15 border border-red-500/30 text-xs text-red-400 font-semibold">
                         <XCircle size={12} /> Rejected
                       </span>
-                      <button onClick={() => undoStatus(candidate.id)}
-                        className="px-2 py-2 rounded-lg bg-white/5 border border-white/10 text-[10px] text-gray-500 hover:text-white transition-all"
-                        title="Undo">
-                        ↩️
-                      </button>
                     </div>
                   ) : (
                     <>

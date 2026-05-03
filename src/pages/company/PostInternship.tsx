@@ -8,7 +8,7 @@ import { createInternship } from '@/lib/supabase';
 const skillCategories: Record<string, string[]> = {
   'AI / ML': ['Python', 'Machine Learning', 'Deep Learning', 'TensorFlow', 'PyTorch', 'NLP', 'Computer Vision', 'OpenCV', 'Scikit-Learn', 'Keras', 'LLMs', 'Hugging Face', 'ONNX', 'MLOps'],
   'Web Development': ['React', 'Node.js', 'TypeScript', 'JavaScript', 'HTML/CSS', 'Next.js', 'Vue.js', 'Angular', 'Django', 'Flask', 'FastAPI', 'Express.js', 'GraphQL', 'REST API', 'Tailwind CSS'],
-  'Embedded Systems': ['C', 'C++', 'Embedded C', 'Arduino', 'Raspberry Pi', 'RTOS', 'ARM Cortex', 'STM32', 'ESP32', 'I2C', 'SPI', 'UART', 'VHDL', 'Verilog', 'FPGA', 'PCB Design', 'Microcontrollers', 'IoT', 'Firmware', 'Oscilloscope', 'JTAG'],
+  'Embedded & Hardware': ['C', 'C++', 'Embedded C', 'Arduino', 'Raspberry Pi', 'RTOS', 'ARM Cortex', 'STM32', 'ESP32', 'I2C', 'SPI', 'UART', 'VHDL', 'Verilog', 'FPGA', 'PCB Design', 'Microcontrollers', 'IoT', 'Firmware', 'Oscilloscope', 'JTAG', 'Sensors', 'Actuators', 'Zigbee', 'Bluetooth Low Energy (BLE)', 'MicroPython', 'FreeRTOS', 'Linux Device Drivers', 'Yocto', 'CAN bus', 'Microprocessor', 'Digital Signal Processing'],
   'Data & Analytics': ['SQL', 'PostgreSQL', 'MongoDB', 'Pandas', 'NumPy', 'Power BI', 'Tableau', 'Excel', 'R', 'Data Visualization', 'ETL', 'Apache Spark', 'Hadoop', 'Kafka'],
   'Cloud & DevOps': ['AWS', 'Azure', 'GCP', 'Docker', 'Kubernetes', 'CI/CD', 'Git', 'GitHub Actions', 'Jenkins', 'Terraform', 'Linux', 'Nginx', 'Firebase'],
   'Mobile Development': ['Flutter', 'React Native', 'Swift', 'Kotlin', 'Android', 'iOS', 'Dart'],
