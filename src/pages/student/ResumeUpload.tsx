@@ -5,30 +5,10 @@ import { Upload, FileText, Sparkles, Brain, AlertCircle, Star, Loader2, RefreshC
 import { useAuthStore } from '@/store/authStore';
 import { useResumeStore, type AnalysisResult } from '@/store/resumeStore';
 import toast from 'react-hot-toast';
-import * as pdfjsLib from 'pdfjs-dist';
 
-// Configure PDF.js worker — use CDN for reliability
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+// We use server-side parsing to avoid client-side worker/CORS issues.
+// Base64 conversion uses FileReader to prevent browser freezing.
 
-/**
- * Extract text from a PDF file entirely in the browser using pdfjs-dist.
- * This avoids sending large base64 blobs to the serverless function,
- * preventing timeouts on Vercel.
- */
-async function extractTextFromPdf(file: File): Promise<string> {
-  const buffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise;
-  const pages: string[] = [];
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    const pageText = content.items
-      .map((item: any) => item.str)
-      .join(' ');
-    pages.push(pageText);
-  }
-  return pages.join('\n\n');
-}
 
 export default function ResumeUpload() {
   const { isAnalyzed, result: storedResult } = useResumeStore();
@@ -99,28 +79,23 @@ export default function ResumeUpload() {
     const loadingToast = toast.loading(`Reading ${ext.toUpperCase()} file...`);
 
     try {
-      if (fileType === 'pdf') {
-        // Extract text client-side using pdfjs-dist (avoids serverless timeout)
-        const text = await extractTextFromPdf(file);
-        toast.dismiss(loadingToast);
-        if (!text || text.trim().length < 50) {
-          toast.error('Could not extract enough text from this PDF. It may be image-based. Try pasting text instead.');
-          return;
-        }
-        callApi({ resumeText: text });
-      } else if (fileType === 'txt') {
-        // Read TXT file as text directly
+      if (fileType === 'txt') {
         const text = await file.text();
         toast.dismiss(loadingToast);
         callApi({ resumeText: text });
       } else {
-        // DOCX — send as base64 for server-side parsing (mammoth is lightweight)
-        const buffer = await file.arrayBuffer();
-        const base64 = btoa(
-          new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
-        );
-        toast.dismiss(loadingToast);
-        callApi({ fileData: base64, fileType });
+        // Safe, non-blocking base64 conversion using FileReader
+        const reader = new FileReader();
+        reader.onload = () => {
+          toast.dismiss(loadingToast);
+          const base64Data = (reader.result as string).split(',')[1];
+          callApi({ fileData: base64Data, fileType });
+        };
+        reader.onerror = () => {
+          toast.dismiss(loadingToast);
+          toast.error('Error reading file. Please try pasting text instead.');
+        };
+        reader.readAsDataURL(file);
       }
     } catch (err) {
       console.error('File read error:', err);
