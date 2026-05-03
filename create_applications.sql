@@ -1,0 +1,1 @@
+CREATE TABLE applications (id UUID PRIMARY KEY DEFAULT uuid_generate_v4(), student_id UUID REFERENCES user_profiles(id), company_id UUID REFERENCES user_profiles(id), internship_id UUID REFERENCES internships(id), status TEXT DEFAULT 'Applied', created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL); 
