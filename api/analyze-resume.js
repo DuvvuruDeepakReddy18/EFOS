@@ -5,7 +5,9 @@
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const mammoth = require("mammoth");
-const pdfParse = require("pdf-parse");
+
+// Use unpdf instead of pdf-parse — it works in Vercel serverless (no DOMMatrix/canvas needed)
+import { extractText } from "unpdf";
 
 /* ── Curated course database with REAL working URLs ── */
 const COURSE_DB = {
@@ -183,125 +185,40 @@ function findCourses(skillName) {
 }
 
 /* ── NVIDIA API Config ── */
-const NVIDIA_KEYS = [
+const API_KEY =
+  process.env.NVIDIA_API_KEY_1 ||
+  process.env.NVIDIA_API_KEY_2 ||
+  process.env.NVIDIA_API_KEY ||
+  "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";
+
+// Vercel maxDuration is 60s and the client aborts at ~58s.
+// Budget: 22s per model × 2 models = 44s, leaves ~14s for file parsing + JSON extraction.
+const NVIDIA_KEYS = () => [
   {
-    key: process.env.NVIDIA_API_KEY_1 || process.env.NVIDIA_API_KEY || "",
-    model: "meta/llama-3.1-8b-instruct",   // Fast & capable
+    key: API_KEY,
+    model: "meta/llama-3.1-8b-instruct",
     maxTokens: 1500,
-    timeout: 20000,
+    timeout: 22000,
   },
   {
-    key: process.env.NVIDIA_API_KEY_2 || process.env.NVIDIA_API_KEY || "",
-    model: "meta/llama-3.3-70b-instruct",   // Slower fallback
+    key: API_KEY,
+    model: "meta/llama-3.3-70b-instruct",
     maxTokens: 1500,
-    timeout: 20000,
-  },
-  {
-    key: process.env.NVIDIA_API_KEY_1 || process.env.NVIDIA_API_KEY || "",
-    model: "nvidia/llama-3.1-nemotron-70b-instruct",  // NVIDIA optimized
-    maxTokens: 1500,
-    timeout: 15000,
+    timeout: 22000,
   },
 ];
 
 const NVIDIA_URL = "https://integrate.api.nvidia.com/v1/chat/completions";
 
-const SYSTEM_PROMPT = `You are an expert AI Resume Analyzer for InternMatch — India's smartest AI-powered internship allocation platform.
-
-When given resume text, you MUST return ONLY a valid JSON object (no markdown, no backticks, no explanation) with this exact structure:
-
-{
-  "resume_score": <number 0-100>,
-  "summary": "<2-3 sentence professional summary of the candidate>",
-  "name": "<candidate full name or 'Unknown'>",
-  "email": "<email or null>",
-  "phone": "<phone or null>",
-  "education": {
-    "institution": "<college/university name>",
-    "degree": "<degree and branch>",
-    "cgpa": <number or null>,
-    "year": "<graduation year or current year>"
-  },
-  "skills": [
-    {
-      "name": "<skill name>",
-      "category": "<Programming|AI/ML|Web Dev|Database|DevOps|Cloud|Data Science|Electronics|Design|Other>",
-      "level": "<Expert|Intermediate|Beginner>",
-      "confidence": <0.0-1.0>
-    }
-  ],
-  "projects": [
-    {
-      "title": "<project name>",
-      "description": "<1-line description>",
-      "tech_stack": ["<tech1>", "<tech2>"],
-      "relevance_score": <0-100>
-    }
-  ],
-  "experience": [
-    {
-      "role": "<job title>",
-      "company": "<company name>",
-      "duration": "<duration>",
-      "domain": "<domain>"
-    }
-  ],
-  "certifications": ["<cert1>", "<cert2>"],
-  "preferred_domains": ["<domain1>", "<domain2>"],
-  "improvement_tips": [
-    {"text": "<actionable tip>", "type": "tip"},
-    {"text": "<actionable tip>", "type": "warning"}
-  ],
-  "talent_dna": {
-    "analyticalThinking": <0-100>,
-    "creativity": <0-100>,
-    "leadership": <0-100>,
-    "adaptability": <0-100>,
-    "communication": <0-100>,
-    "collaboration": <0-100>,
-    "problemSolving": <0-100>,
-    "innovationIndex": <0-100>
-  },
-  "skill_gaps": [
-    {
-      "skill": "<missing skill name>",
-      "priority": "<Critical|Moderate|Optional>",
-      "hoursToClose": <number>,
-      "matchBoost": <number 1-30>,
-      "reason": "<why this skill is needed>"
-    }
-  ],
-  "target_roles": ["<role1>", "<role2>", "<role3>"],
-  "current_match_score": <0-100>,
-  "potential_match_score": <0-100>,
-  "learning_plan": [
-    {
-      "week_range": "<Week 1-2>",
-      "topic": "<topic to learn>",
-      "skills_covered": ["<skill1>", "<skill2>"],
-      "goal": "<what to achieve>"
-    }
-  ]
-}
-
-Rules:
-- Extract ALL skills you can identify, even implicit ones (e.g. if they built a web app, they know HTML/CSS)
-- Confidence should reflect how strongly the resume evidences that skill
-- Resume score considers: completeness, formatting quality, skill depth, project impact, quantified achievements
-- Be generous but honest with scores
-- improvement_tips should be specific and actionable (4-6 tips)
-- talent_dna scores should be inferred from projects, roles, and described experiences
-- skill_gaps: Identify 4-8 skills the candidate DOES NOT have but would need for their target roles in the tech industry
-- target_roles: Suggest 3 target internship roles that best fit the candidate
-- learning_plan: Create a 4-6 week personalized learning plan based on skill gaps, ordered by priority
-- DO NOT include recommended_courses in the JSON (courses are handled separately)
-- Return ONLY the JSON, nothing else
-- Ensure all string values in the JSON are properly escaped (e.g., escape double quotes, no raw newlines or control characters).
-- Do not output any markdown text outside the JSON object.`;
+const SYSTEM_PROMPT = `You are an expert AI Resume Analyzer. Given a resume, return ONLY JSON with this exact structure:
+{"resume_score":85,"summary":"2-3 sentence comprehensive summary","name":"Name","email":"Email","phone":"Phone","education":{"institution":"University Name","degree":"Degree","cgpa":8.5,"year":"2024"},"skills":[{"name":"Skill","category":"Domain","level":"Beginner/Intermediate/Expert","confidence":0.9}],"projects":[{"title":"Proj","description":"Detailed short description","tech_stack":["React"],"relevance_score":85}],"experience":[{"role":"Role","company":"Company","duration":"Duration","domain":"Domain"}],"certifications":["Cert 1"],"preferred_domains":["Web"],"improvement_tips":[{"text":"Detailed actionable tip","type":"tip/warning"}],"talent_dna":{"analyticalThinking":80,"communication":85,"creativity":75,"leadership":70,"adaptability":85,"collaboration":90,"problemSolving":85,"innovationIndex":80},"skill_gaps":[{"skill":"Skill","priority":"Moderate","reason":"Why"}],"target_roles":["Role1"]}
+Extract ALL relevant information. Provide at least 5-10 skills, 3-5 projects (MUST include a relevance_score 0-100), 3-5 actionable improvement_tips, and all 8 talent_dna metrics scored 0-100. Output ONLY valid JSON.`;
 
 async function callNvidiaAPI(resumeText, config) {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), config.timeout || 20000);
+  const timeout = setTimeout(() => controller.abort(), config.timeout || 55000);
+
+  console.log(`[resume-api] callNvidiaAPI: model=${config.model}, keyLength=${config.key?.length || 0}, keyPrefix=${config.key?.substring(0, 10)}...`);
 
   try {
     const response = await fetch(NVIDIA_URL, {
@@ -316,24 +233,29 @@ async function callNvidiaAPI(resumeText, config) {
           { role: "system", content: SYSTEM_PROMPT },
           {
             role: "user",
-            content: `Analyze this resume and return the JSON:\n\n---RESUME START---\n${resumeText.slice(0, 5000)}\n---RESUME END---`,
+            content: `Analyze this resume and return the JSON:\n\n---RESUME START---\n${resumeText.slice(0, 3000)}\n---RESUME END---`,
           },
         ],
-        temperature: 0.15,
-        top_p: 0.9,
-        max_tokens: config.maxTokens,
+        temperature: 0.1,
+        top_p: 0.8,
+        max_tokens: 700,
         stream: false,
       }),
       signal: controller.signal,
     });
 
+    console.log(`[resume-api] NVIDIA response status: ${response.status}`);
+
     if (!response.ok) {
       const errText = await response.text();
+      console.error(`[resume-api] NVIDIA API error body: ${errText.substring(0, 300)}`);
       throw new Error(`NVIDIA API error (${response.status}): ${errText}`);
     }
 
     const data = await response.json();
     const raw = data.choices?.[0]?.message?.content ?? "";
+    console.log(`[resume-api] Raw AI response length: ${raw.length} chars`);
+    console.log(`[resume-api] Raw AI response preview: ${raw.substring(0, 200)}...`);
 
     // Strip markdown code fences if present
     let jsonStr = raw.trim();
@@ -352,9 +274,11 @@ async function callNvidiaAPI(resumeText, config) {
     }
 
     try {
-      return JSON.parse(jsonStr);
+      const parsed = JSON.parse(jsonStr);
+      console.log(`[resume-api] Successfully parsed JSON. resume_score=${parsed.resume_score}, name=${parsed.name}`);
+      return parsed;
     } catch (parseError) {
-      console.error(`Failed to parse JSON from ${config.model}. Raw:`, raw.substring(0, 100) + "...");
+      console.error(`[resume-api] JSON parse failed for ${config.model}. Raw (first 500):`, raw.substring(0, 500));
       throw new Error(`Invalid JSON format returned by AI: ${parseError.message}`);
     }
   } finally {
@@ -421,15 +345,15 @@ async function extractTextFromBase64(base64Data, fileType) {
   console.log(`[resume-api] Parsing ${fileType} file, buffer size: ${buffer.length} bytes`);
 
   if (fileType === "pdf") {
-    // Strategy 1: Try pdf-parse (reliable, works in Vercel Serverless)
+    // Strategy 1: Try unpdf (works in Vercel serverless — no DOM/canvas needed)
     try {
-      const pdfData = await pdfParse(buffer);
-      const text = pdfData.text;
-      console.log(`[resume-api] pdf-parse extracted ${text?.length || 0} chars`);
+      const uint8 = new Uint8Array(buffer);
+      const { text } = await extractText(uint8, { mergePages: true });
+      console.log(`[resume-api] unpdf extracted ${text?.length || 0} chars`);
       if (text && text.trim().length > 30) return text;
-      console.log("[resume-api] pdf-parse returned too little text, trying fallback...");
-    } catch (pdfParseErr) {
-      console.error("[resume-api] pdf-parse failed:", pdfParseErr.message);
+      console.log("[resume-api] unpdf returned too little text, trying fallback...");
+    } catch (unpdfErr) {
+      console.error("[resume-api] unpdf failed:", unpdfErr.message);
     }
 
     // Strategy 2: Raw binary text extraction (works on some PDFs)
@@ -527,9 +451,11 @@ export default async function handler(req, res) {
     }
 
     // Validate that at least one API key is configured
-    const hasKey = NVIDIA_KEYS.some((c) => c.key && c.key.length > 0);
+    console.log(`[resume-api] API_KEY length: ${API_KEY?.length || 0}, prefix: ${API_KEY?.substring(0, 10) || 'EMPTY'}`);
+    console.log(`[resume-api] ENV KEY_1: ${(process.env.NVIDIA_API_KEY_1 || '').length} chars, KEY_2: ${(process.env.NVIDIA_API_KEY_2 || '').length} chars, KEY: ${(process.env.NVIDIA_API_KEY || '').length} chars`);
+    const hasKey = API_KEY && API_KEY.length > 0;
     if (!hasKey) {
-      console.error("No NVIDIA API keys configured. Set NVIDIA_API_KEY_1 or NVIDIA_API_KEY in Vercel env vars.");
+      console.error("[resume-api] No NVIDIA API keys configured. Set NVIDIA_API_KEY_1 or NVIDIA_API_KEY in Vercel env vars.");
       return res.status(503).json({
         error: "AI service not configured. Please contact the administrator.",
         detail: "Missing NVIDIA_API_KEY environment variable",
@@ -538,7 +464,8 @@ export default async function handler(req, res) {
 
     // Try each NVIDIA model in order (fastest first)
     let lastError = null;
-    for (const config of NVIDIA_KEYS) {
+    const configuredKeys = NVIDIA_KEYS();
+    for (const config of configuredKeys) {
       if (!config.key) {
         console.warn(`Skipping model ${config.model} — no API key`);
         continue;
@@ -605,10 +532,13 @@ export default async function handler(req, res) {
       }
     }
 
-    return res.status(502).json({
-      error: "All AI models are temporarily unavailable. Please try again in a moment.",
-      detail: lastError?.message,
-    });
+    // If we get here, all models failed
+    console.error("[resume-api] All NVIDIA models failed or no valid response was parsed.");
+    if (lastError) {
+      return res.status(500).json({ error: "AI analysis failed after multiple attempts.", detail: lastError.message });
+    } else {
+      return res.status(500).json({ error: "Unknown error occurred during AI analysis." });
+    }
   } catch (err) {
     console.error("Server error:", err);
     return res.status(500).json({ error: "Internal server error" });

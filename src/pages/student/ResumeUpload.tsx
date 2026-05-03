@@ -38,19 +38,24 @@ export default function ResumeUpload() {
   const callApi = useCallback(async (body: Record<string, string>) => {
     if (!user) { toast.error('Please log in first.'); return; }
     setStage('analyzing');
+    clearAnalysis(); // Ensure old data is removed while analyzing
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 58000);
     try {
       const res = await fetch('/api/analyze-resume', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       
       let data;
       try {
         data = await res.json();
       } catch (jsonErr) {
         if (res.status === 413) throw new Error("File too large for the AI server. Please use the 'paste text' option.");
-        if (res.status === 504) throw new Error("AI Server timeout. Please try again or paste a shorter text.");
+        if (res.status === 504) throw new Error("AI Server timeout. Please try again.");
         throw new Error(`Server returned error ${res.status}. Try pasting text instead.`);
       }
 
@@ -64,8 +69,13 @@ export default function ResumeUpload() {
       setStage('complete');
       toast.success('Resume analyzed! Skill Passport & Learning Hub are now personalized.');
     } catch (err: any) {
+      clearTimeout(timeoutId);
       console.error('Analysis error:', err);
-      toast.error(err.message || 'Failed to analyze. Please try again.');
+      if (err.name === 'AbortError') {
+        toast.error('AI analysis timed out. Please try again with a shorter resume text.');
+      } else {
+        toast.error(err.message || 'Failed to analyze. Please try again.');
+      }
       setStage('upload');
     }
   }, [user, setAnalysis]);
@@ -319,7 +329,7 @@ export default function ResumeUpload() {
                 <h3 className="text-base font-bold text-white">AI Improvement Tips</h3>
               </div>
               <div className="space-y-2">
-                {result.improvement_tips.map((tip, i) => (
+                {result.improvement_tips?.map((tip, i) => (
                   <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg bg-white/[0.02]">
                     {tip.type === 'tip' ? <Star size={14} className="text-amber-400 flex-shrink-0 mt-0.5" /> : <AlertCircle size={14} className="text-orange-400 flex-shrink-0 mt-0.5" />}
                     <span className="text-sm text-gray-300">{tip.text}</span>
@@ -342,7 +352,7 @@ export default function ResumeUpload() {
                   <p className="text-xs text-gray-400">{result.education.degree} • {result.education.year}</p>
                   {result.education.cgpa && <p className="text-xs text-blue-400 mt-1">CGPA: {result.education.cgpa}</p>}
                 </div>
-                {result.preferred_domains.length > 0 && (
+                {result.preferred_domains?.length > 0 && (
                   <div className="px-4 py-3 rounded-xl bg-white/[0.02] border border-white/5">
                     <p className="text-xs text-gray-400 mb-1">Preferred Domains</p>
                     <div className="flex flex-wrap gap-1">{result.preferred_domains.map(d => (
@@ -350,7 +360,7 @@ export default function ResumeUpload() {
                     ))}</div>
                   </div>
                 )}
-                {result.certifications.length > 0 && (
+                {result.certifications?.length > 0 && (
                   <div className="px-4 py-3 rounded-xl bg-white/[0.02] border border-white/5">
                     <p className="text-xs text-gray-400 mb-1">Certifications</p>
                     <div className="flex flex-wrap gap-1">{result.certifications.map(c => (
@@ -367,10 +377,10 @@ export default function ResumeUpload() {
             <div className="flex items-center gap-2 mb-4">
               <FileText size={16} className="text-blue-400" />
               <h3 className="text-base font-bold text-white">Extracted Skills</h3>
-              <span className="text-xs text-gray-400 ml-auto">{result.skills.length} skills detected</span>
+              <span className="text-xs text-gray-400 ml-auto">{result.skills?.length || 0} skills detected</span>
             </div>
             <div className="grid md:grid-cols-2 gap-3">
-              {result.skills.map((skill, i) => (
+              {result.skills?.map((skill, i) => (
                 <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
                   className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5">
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${
@@ -393,7 +403,7 @@ export default function ResumeUpload() {
           </div>
 
           {/* Projects */}
-          {result.projects.length > 0 && (
+          {result.projects?.length > 0 && (
             <div className="glass-card p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Award size={16} className="text-purple-400" />
@@ -402,13 +412,16 @@ export default function ResumeUpload() {
               <div className="space-y-3">
                 {result.projects.map((proj, i) => (
                   <div key={i} className="flex items-start gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/5">
-                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${scoreGrad(proj.relevance_score)} flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}>
-                      {proj.relevance_score}
+                    <div className="flex flex-col items-center">
+                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${scoreGrad(proj.relevance_score)} flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow-lg`}>
+                        {proj.relevance_score}
+                      </div>
+                      <span className="text-[9px] text-gray-500 mt-1 uppercase tracking-wider font-semibold text-center leading-tight">Relevance</span>
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium text-white">{proj.title}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{proj.description}</p>
-                      <div className="flex flex-wrap gap-1 mt-2">{proj.tech_stack.map(t => (
+                      <p className="text-xs text-gray-400 mt-1">{proj.description}</p>
+                      <div className="flex flex-wrap gap-1 mt-2">{proj.tech_stack?.map(t => (
                         <span key={t} className="px-2 py-0.5 rounded-md bg-white/5 text-[10px] text-gray-300 border border-white/5">{t}</span>
                       ))}</div>
                     </div>
@@ -419,7 +432,7 @@ export default function ResumeUpload() {
           )}
 
           {/* Experience */}
-          {result.experience.length > 0 && (
+          {result.experience?.length > 0 && (
             <div className="glass-card p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Briefcase size={16} className="text-green-400" />
@@ -448,11 +461,21 @@ export default function ResumeUpload() {
                 <Dna size={16} className="text-pink-400" />
                 <h3 className="text-base font-bold text-white">AI-Inferred Talent DNA</h3>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {Object.entries(result.talent_dna).map(([key, value]) => (
-                  <div key={key} className="text-center p-3 rounded-xl bg-white/[0.02] border border-white/5">
-                    <div className={`text-2xl font-bold ${scoreColor(value)}`}>{value}</div>
-                    <p className="text-[10px] text-gray-400 mt-1 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
+                  <div key={key} className="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex flex-col justify-between">
+                    <div className="flex items-end justify-between mb-2">
+                      <p className="text-xs text-gray-400 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
+                      <div className={`text-lg font-bold ${scoreColor(value as number)}`}>{value as number}</div>
+                    </div>
+                    <div className="w-full bg-white/5 rounded-full h-1.5 mt-2 overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${value}%` }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                        className={`h-full rounded-full bg-gradient-to-r ${scoreGrad(value as number)}`}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
